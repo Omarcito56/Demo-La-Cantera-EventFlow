@@ -25,7 +25,8 @@ export const AdminQuotesPage = () => {
     const matchesSearch = 
       (q.folio && q.folio.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (q.clientName && q.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (q.eventType && q.eventType.toLowerCase().includes(searchTerm.toLowerCase()));
+      (q.eventType && q.eventType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ((q.spaceName || q.packageName) && (q.spaceName || q.packageName).toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesStatus = filterStatus === "todos" || q.status === filterStatus;
     return matchesSearch && matchesStatus;
@@ -58,7 +59,7 @@ export const AdminQuotesPage = () => {
               <SearchIcon size={16} />
               <input
                 type="text"
-                placeholder="Buscar cotización por folio o cliente..."
+                placeholder="Buscar por cliente, evento o espacio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -84,16 +85,18 @@ export const AdminQuotesPage = () => {
           </div>
         </div>
 
-        {/* Tabla solicitada: Folio | Cliente | Fecha | Evento | Paquete | Total | Estado | Acciones */}
+        {/* Tabla Oficial Requerida:
+            Cliente | Evento | Asistentes | Espacio | Servicios | Total | Estado (+ Folio y Acciones) */}
         <div className="table-responsive-container">
           <table className="admin-data-table">
             <thead>
               <tr>
                 <th>Folio</th>
                 <th>Cliente</th>
-                <th>Fecha</th>
                 <th>Evento</th>
-                <th>Paquete</th>
+                <th>Asistentes</th>
+                <th>Espacio</th>
+                <th>Servicios</th>
                 <th>Total</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -103,10 +106,22 @@ export const AdminQuotesPage = () => {
               {filteredQuotes.map((quote) => (
                 <tr key={quote.id}>
                   <td className="folio-cell">{quote.folio}</td>
-                  <td className="client-name-cell ph-mask">{quote.clientName}</td>
-                  <td style={{ fontWeight: 600 }}>{quote.date}</td>
-                  <td>{quote.eventType}</td>
-                  <td>{quote.packageName}</td>
+                  <td className="client-name-cell ph-mask">
+                    {quote.clientName}
+                    <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
+                      {quote.clientEmail}
+                    </div>
+                  </td>
+                  <td style={{ fontWeight: 600 }}>{quote.eventType}</td>
+                  <td>{quote.guests || 200} pax</td>
+                  <td style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>
+                    {quote.spaceName || quote.packageName || "Salón Principal"}
+                  </td>
+                  <td>
+                    <span style={{ fontSize: "0.82rem", padding: "0.2rem 0.5rem", borderRadius: "3px", backgroundColor: "var(--color-bg)", border: "1px solid var(--border-light)" }}>
+                      {quote.servicesCount || 3} servicios demo
+                    </span>
+                  </td>
                   <td style={{ fontWeight: 700, color: "var(--color-charcoal-deep)" }}>
                     ${(quote.total || 0).toLocaleString("es-MX")} MXN
                   </td>
@@ -120,6 +135,7 @@ export const AdminQuotesPage = () => {
                         className="btn btn-secondary btn-sm"
                         style={{ padding: "0.25rem 0.55rem", fontSize: "0.75rem" }}
                         onClick={() => setSelectedQuote(quote)}
+                        title="Ver desglose completo"
                       >
                         <EyeIcon size={13} />
                         <span>Ver</span>
@@ -146,11 +162,11 @@ export const AdminQuotesPage = () => {
       {/* Modal Detalle de Cotización */}
       {selectedQuote && (
         <div className="modal-overlay animate-fade-in" onClick={() => setSelectedQuote(null)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: "480px" }}>
+          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: "500px" }}>
             <div className="modal-header">
               <div>
-                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-terracotta)", fontWeight: 700 }}>
-                  Detalle de Cotización
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gold)", fontWeight: 700 }}>
+                  Detalle de Cotización · La Cantera
                 </span>
                 <h3 style={{ fontSize: "1.25rem", color: "var(--color-charcoal-deep)" }}>
                   Folio: {selectedQuote.folio}
@@ -179,20 +195,30 @@ export const AdminQuotesPage = () => {
                 </div>
 
                 <div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Formato de celebración</span>
+                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Tipo de evento</span>
                   <div style={{ fontWeight: 600 }}>{selectedQuote.eventType}</div>
                 </div>
 
                 <div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Paquete seleccionado</span>
-                  <div style={{ fontWeight: 600, color: "var(--color-terracotta)" }}>{selectedQuote.packageName}</div>
+                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Espacio seleccionado</span>
+                  <div style={{ fontWeight: 600, color: "var(--color-primary)" }}>{selectedQuote.spaceName || selectedQuote.packageName}</div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Asistentes proyectados</span>
+                  <div style={{ fontWeight: 600 }}>{selectedQuote.guests || 200} personas</div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Servicios adicionales</span>
+                  <div style={{ fontWeight: 600 }}>{selectedQuote.servicesCount || 3} servicios demo</div>
                 </div>
               </div>
 
               <div style={{ padding: "1rem", backgroundColor: "var(--color-bg)", borderRadius: "var(--radius-sm)", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Total cotizado:</span>
-                  <div style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-terracotta)" }}>
+                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Total cotizado (DEMO):</span>
+                  <div style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-primary)" }}>
                     ${(selectedQuote.total || 0).toLocaleString("es-MX")} MXN
                   </div>
                 </div>

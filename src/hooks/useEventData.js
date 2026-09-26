@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   initialBusinessData,
-  initialPackagesData,
+  initialSpacesData,
   initialRequestsData,
   initialQuotesData,
   initialEventsData,
@@ -20,7 +20,7 @@ const STORAGE_KEYS = {
   PAYMENTS: "eventflow_payments",
   CALENDAR_OVERRIDES: "eventflow_calendar_overrides",
   AUTH: "eventflow_auth",
-  DATA_VERSION: "eventflow_version_antigua_v3_pricing"
+  DATA_VERSION: "eventflow_version_lacantera_v1"
 };
 
 const getStored = (key, fallback) => {
@@ -42,24 +42,28 @@ const setStored = (key, value) => {
   }
 };
 
-// Validador de integridad para asegurar que el catálogo tenga todos los paquetes de La Antigua
-const isValidAntiguaCatalog = (pkgs) => {
+// Validador de integridad para asegurar que el catálogo tenga los espacios oficiales de La Cantera
+const isValidCanteraCatalog = (pkgs) => {
   if (!Array.isArray(pkgs) || pkgs.length < 3) return false;
-  const hasEsencial = pkgs.some(p => p.id === "esencial");
-  const hasCelebracion = pkgs.some(p => p.id === "celebracion");
-  const hasExperiencia = pkgs.some(p => p.id === "experiencia");
-  return hasEsencial && hasCelebracion && hasExperiencia;
+  const hasPrincipal = pkgs.some(p => p.id === "salon-principal");
+  const hasBanquete = pkgs.some(p => p.id === "formato-banquete");
+  const hasPrivado = pkgs.some(p => p.id === "salon-privado");
+  return hasPrincipal && hasBanquete && hasPrivado;
 };
 
 export const useEventData = () => {
-  const [business, setBusiness] = useState(() => getStored(STORAGE_KEYS.BUSINESS, initialBusinessData));
+  const [business, setBusiness] = useState(() => {
+    const stored = getStored(STORAGE_KEYS.BUSINESS, null);
+    if (!stored) return initialBusinessData;
+    return { ...initialBusinessData, ...stored };
+  });
   const [packages, setPackages] = useState(() => {
-    const stored = getStored(STORAGE_KEYS.PACKAGES, initialPackagesData);
-    if (!isValidAntiguaCatalog(stored)) {
+    const stored = getStored(STORAGE_KEYS.PACKAGES, initialSpacesData);
+    if (!isValidCanteraCatalog(stored)) {
       try {
-        localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(initialPackagesData));
+        localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(initialSpacesData));
       } catch (err) {}
-      return initialPackagesData;
+      return initialSpacesData;
     }
     return stored;
   });
@@ -71,21 +75,21 @@ export const useEventData = () => {
   const [calendarOverrides, setCalendarOverrides] = useState(() => getStored(STORAGE_KEYS.CALENDAR_OVERRIDES, {}));
 
   const refreshFromStorage = useCallback(() => {
-    // Verificar inicialización limpia de datos para La Antigua Eventos con control de versión
+    // Inicialización limpia de datos para La Cantera Events con control de versión
     const storedBus = getStored(STORAGE_KEYS.BUSINESS, null);
     const storedPkgs = getStored(STORAGE_KEYS.PACKAGES, []);
     const storedVer = localStorage.getItem(STORAGE_KEYS.DATA_VERSION);
     
     const isOldData = !storedBus || 
       !storedBus.name || 
-      !storedBus.name.includes("Antigua") || 
-      !isValidAntiguaCatalog(storedPkgs) ||
-      storedVer !== "3.0";
+      !storedBus.name.includes("Cantera") || 
+      !isValidCanteraCatalog(storedPkgs) ||
+      storedVer !== "lacantera_v2";
 
     if (isOldData) {
-      localStorage.setItem(STORAGE_KEYS.DATA_VERSION, "3.0");
+      localStorage.setItem(STORAGE_KEYS.DATA_VERSION, "lacantera_v2");
       localStorage.setItem(STORAGE_KEYS.BUSINESS, JSON.stringify(initialBusinessData));
-      localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(initialPackagesData));
+      localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(initialSpacesData));
       localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(initialRequestsData));
       localStorage.setItem(STORAGE_KEYS.QUOTES, JSON.stringify(initialQuotesData));
       localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(initialEventsData));
@@ -95,7 +99,7 @@ export const useEventData = () => {
     }
 
     setBusiness(getStored(STORAGE_KEYS.BUSINESS, initialBusinessData));
-    setPackages(getStored(STORAGE_KEYS.PACKAGES, initialPackagesData));
+    setPackages(getStored(STORAGE_KEYS.PACKAGES, initialSpacesData));
     setRequests(getStored(STORAGE_KEYS.REQUESTS, initialRequestsData));
     setQuotes(getStored(STORAGE_KEYS.QUOTES, initialQuotesData));
     setEvents(getStored(STORAGE_KEYS.EVENTS, initialEventsData));
@@ -103,7 +107,6 @@ export const useEventData = () => {
     setPayments(getStored(STORAGE_KEYS.PAYMENTS, initialPaymentsData));
     setCalendarOverrides(getStored(STORAGE_KEYS.CALENDAR_OVERRIDES, {}));
   }, []);
-
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -120,18 +123,18 @@ export const useEventData = () => {
   }, [refreshFromStorage]);
 
   /**
-   * Crea una nueva solicitud desde la web pública con folio correlativo ANT-000126+
+   * Crea una nueva solicitud desde la web pública con folio correlativo CAN-000126+
    */
   const createRequest = (formData) => {
     const currentRequests = getStored(STORAGE_KEYS.REQUESTS, initialRequestsData);
     const currentClients = getStored(STORAGE_KEYS.CLIENTS, initialClientsData);
     const currentQuotes = getStored(STORAGE_KEYS.QUOTES, initialQuotesData);
 
-    // Calcular siguiente folio secuencial ANT-
+    // Calcular siguiente folio secuencial CAN-
     let nextNum = 126;
     currentRequests.forEach((req) => {
-      if (req.folio && req.folio.startsWith("ANT-")) {
-        const numPart = parseInt(req.folio.replace("ANT-", ""), 10);
+      if (req.folio && req.folio.startsWith("CAN-")) {
+        const numPart = parseInt(req.folio.replace("CAN-", ""), 10);
         if (!isNaN(numPart) && numPart >= nextNum) {
           nextNum = numPart + 1;
         }
@@ -139,7 +142,7 @@ export const useEventData = () => {
     });
 
     const paddedNum = String(nextNum).padStart(6, "0");
-    const folio = `ANT-${paddedNum}`;
+    const folio = `CAN-${paddedNum}`;
 
     const newRequest = {
       id: `req-${Date.now()}`,
@@ -147,18 +150,21 @@ export const useEventData = () => {
       clientName: formData.clientName || "Cliente Demo",
       clientPhone: formData.clientPhone || "",
       clientEmail: formData.clientEmail || "",
+      company: formData.company || "",
       cityZone: formData.cityZone || "Reynosa, Tamaulipas",
       eventType: formData.eventType || "Boda",
-      guests: Number(formData.guests) || 120,
-      packageId: formData.packageId || "celebracion",
-      packageName: formData.packageName || "Celebración",
-      packageBasePrice: Number(formData.packageBasePrice) || 25000,
+      guests: Number(formData.guests) || 200,
+      spaceId: formData.spaceId || formData.packageId || "salon-principal",
+      spaceName: formData.spaceName || formData.packageName || "Salón Principal",
+      packageName: formData.spaceName || formData.packageName || "Salón Principal",
+      layout: formData.layout || "Banquete",
+      packageBasePrice: Number(formData.packageBasePrice) || 35000,
       extras: formData.extras || [],
       extrasTotal: Number(formData.extrasTotal) || 0,
-      estimatedTotal: Number(formData.estimatedTotal) || 25000,
-      suggestedDeposit: Number(formData.suggestedDeposit) || 5000,
+      estimatedTotal: Number(formData.estimatedTotal) || 45000,
+      suggestedDeposit: Number(formData.suggestedDeposit) || 8000,
       date: formData.date || new Date().toISOString().split("T")[0],
-      status: "Nueva",
+      status: "En revisión",
       comments: formData.comments || "",
       createdAt: new Date().toISOString()
     };
@@ -188,6 +194,7 @@ export const useEventData = () => {
         name: newRequest.clientName,
         phone: newRequest.clientPhone,
         email: newRequest.clientEmail,
+        company: newRequest.company,
         eventsCount: 1,
         lastRequestDate: newRequest.date,
         estimatedTotal: `$${newRequest.estimatedTotal.toLocaleString("es-MX")} MXN`,
@@ -204,8 +211,10 @@ export const useEventData = () => {
       clientName: newRequest.clientName,
       clientEmail: newRequest.clientEmail,
       eventType: newRequest.eventType,
-      packageName: newRequest.packageName,
+      spaceName: newRequest.spaceName,
+      packageName: newRequest.spaceName,
       guests: newRequest.guests,
+      servicesCount: (newRequest.extras || []).length,
       total: newRequest.estimatedTotal,
       date: newRequest.date,
       status: "Borrador",
@@ -243,7 +252,7 @@ export const useEventData = () => {
     const item = current.find((q) => q.id === id);
     const oldStatus = item ? item.status : "desconocido";
 
-    const updated = current.map((q) => (q.id === id ? { ...q, status: newStatus } : req));
+    const updated = current.map((q) => (q.id === id ? { ...q, status: newStatus } : q));
     setStored(STORAGE_KEYS.QUOTES, updated);
 
     if (oldStatus !== newStatus) {
@@ -271,19 +280,21 @@ export const useEventData = () => {
     const existing = currentEvents.find((e) => e.folio === req.folio);
     if (existing) return existing;
 
+    const depositAmt = req.suggestedDeposit || 8000;
     const newEvent = {
       id: `evt-${Date.now()}`,
       folio: req.folio,
       clientName: req.clientName,
       clientPhone: req.clientPhone,
       eventType: req.eventType,
+      spaceName: req.spaceName || req.packageName || "Salón Principal",
+      packageName: req.spaceName || req.packageName || "Salón Principal",
       date: req.date,
       guests: req.guests,
       total: req.estimatedTotal,
-      paid: req.suggestedDeposit || 5000,
-      balance: Math.max(0, req.estimatedTotal - (req.suggestedDeposit || 5000)),
-      status: "Apartado",
-      packageName: req.packageName,
+      paid: depositAmt,
+      balance: Math.max(0, req.estimatedTotal - depositAmt),
+      status: "Confirmado",
       zone: req.cityZone || "Reynosa, Tamaulipas"
     };
 
@@ -291,14 +302,14 @@ export const useEventData = () => {
 
     trackEvent("event_created", {
       event_type: req.eventType,
-      package_id: req.packageId
+      space_id: req.spaceId
     });
 
     return newEvent;
   };
 
   /**
-   * Registra un anticipo demo (simulación 100% segura sin procesamiento de dinero real)
+   * Registra un anticipo demo (simulación 100% interactiva sin procesamiento de dinero real)
    */
   const registerDepositDemo = (folio, depositData = {}) => {
     const currentRequests = getStored(STORAGE_KEYS.REQUESTS, initialRequestsData);
@@ -306,7 +317,7 @@ export const useEventData = () => {
     const currentEvents = getStored(STORAGE_KEYS.EVENTS, initialEventsData);
 
     const req = currentRequests.find((r) => r.folio === folio);
-    const amount = Number(depositData.amount) || (req ? req.suggestedDeposit : 5000);
+    const amount = Number(depositData.amount) || (req ? req.suggestedDeposit : 8000);
     const method = depositData.method || "Transferencia demo";
     const clientName = req ? req.clientName : (depositData.clientName || "Cliente Demo");
     const eventType = req ? req.eventType : (depositData.eventType || "Evento");
@@ -341,7 +352,7 @@ export const useEventData = () => {
         ...updatedEvents[eventIndex],
         paid: newPaid,
         balance: Math.max(0, updatedEvents[eventIndex].total - newPaid),
-        status: "Apartado"
+        status: "Confirmado"
       };
       setStored(STORAGE_KEYS.EVENTS, updatedEvents);
     } else if (req) {
@@ -351,13 +362,14 @@ export const useEventData = () => {
         clientName: req.clientName,
         clientPhone: req.clientPhone,
         eventType: req.eventType,
+        spaceName: req.spaceName || req.packageName || "Salón Principal",
+        packageName: req.spaceName || req.packageName || "Salón Principal",
         date: req.date,
         guests: req.guests,
         total: req.estimatedTotal,
         paid: amount,
         balance: Math.max(0, req.estimatedTotal - amount),
         status: "Apartado",
-        packageName: req.packageName,
         zone: req.cityZone || "Reynosa, Tamaulipas"
       };
       setStored(STORAGE_KEYS.EVENTS, [newEvent, ...currentEvents]);
@@ -392,10 +404,10 @@ export const useEventData = () => {
   };
 
   /**
-   * Actualiza un paquete demo
+   * Actualiza un espacio demo
    */
   const updatePackage = (id, updatedData) => {
-    const current = getStored(STORAGE_KEYS.PACKAGES, initialPackagesData);
+    const current = getStored(STORAGE_KEYS.PACKAGES, initialSpacesData);
     const updated = current.map((p) => (p.id === id ? { ...p, ...updatedData } : p));
     setStored(STORAGE_KEYS.PACKAGES, updated);
   };
@@ -408,11 +420,12 @@ export const useEventData = () => {
   };
 
   /**
-   * Restaura todos los datos demo a los valores predeterminados de fábrica de La Antigua Eventos
+   * Restaura todos los datos demo a los valores predeterminados de fábrica de La Cantera Events
    */
   const resetDemoData = () => {
+    localStorage.setItem(STORAGE_KEYS.DATA_VERSION, "lacantera_v1");
     localStorage.setItem(STORAGE_KEYS.BUSINESS, JSON.stringify(initialBusinessData));
-    localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(initialPackagesData));
+    localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(initialSpacesData));
     localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(initialRequestsData));
     localStorage.setItem(STORAGE_KEYS.QUOTES, JSON.stringify(initialQuotesData));
     localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(initialEventsData));
@@ -422,45 +435,41 @@ export const useEventData = () => {
     refreshFromStorage();
   };
 
-  // Cálculo de Métricas demo para el Administrador de La Antigua Eventos
-  const newRequestsCount = requests.filter((r) => r.status === "Nueva").length;
-  const quotesSentCount = quotes.filter((q) => q.status === "Enviada" || q.status === "Aceptada").length;
-  const confirmedEventsCount = events.filter((e) => e.status === "Confirmado" || e.status === "Apartado").length;
+  // Cálculo de Métricas demo para el Administrador de La Cantera Events
+  const newRequestsCount = requests.filter((r) => r.status === "Nueva" || r.status === "En revisión").length;
   const upcomingEventsCount = events.filter((e) => e.status !== "Cancelado" && e.status !== "Realizado").length;
   const pendingQuotesCount = quotes.filter((q) => q.status === "Borrador" || q.status === "Cotizando" || q.status === "Enviada").length;
+
+  // Asistentes proyectados oficiales requeridos:
+  const projectedGuestsCount = events
+    .filter((e) => e.status !== "Cancelado")
+    .reduce((sum, e) => sum + (Number(e.guests) || 0), 0) +
+    requests
+    .filter((r) => r.status !== "Descartada")
+    .reduce((sum, r) => sum + (Number(r.guests) || 0), 0);
 
   const totalDepositsSum = payments
     .filter((p) => p.status === "Pagado" && p.concept === "Anticipo")
     .reduce((sum, p) => sum + (p.amount || 0), 0);
 
-  const projectedIncomeSum = events
-    .filter((e) => e.status !== "Cancelado")
-    .reduce((sum, e) => sum + (e.total || 0), 0) +
-    requests
-    .filter((r) => r.status === "Nueva" || r.status === "Contactado" || r.status === "Esperando anticipo")
-    .reduce((sum, r) => sum + (r.estimatedTotal || 0), 0);
-
-  // Fechas consultadas en agenda y cotizador (métrica con base demostrativa)
-  const datesConsultedCount = 34 + requests.length;
-
   const metrics = {
-    // 5 Métricas principales solicitadas para el Dashboard:
+    // 5 Métricas DEMO del Dashboard:
     newRequests: newRequestsCount || 5,
-    datesConsulted: datesConsultedCount,
-    pendingQuotes: pendingQuotesCount || 4,
-    confirmedEvents: confirmedEventsCount || 3,
-    totalDeposits: totalDepositsSum || 30000,
-    // Métricas auxiliares:
-    quotesSent: quotesSentCount || 4,
     upcomingEvents: upcomingEventsCount || 4,
-    projectedIncome: projectedIncomeSum || 185000,
-    activePackagesCount: packages.filter((p) => p.status === "Activo").length,
+    pendingQuotes: pendingQuotesCount || 4,
+    projectedGuests: projectedGuestsCount || 2350,
+    totalDeposits: totalDepositsSum || 35000,
+    // Métricas auxiliares para compatibilidad:
+    confirmedEvents: events.filter((e) => e.status === "Confirmado" || e.status === "Apartado").length || 3,
+    datesConsulted: 42 + requests.length,
+    activePackagesCount: packages.filter((p) => p.status === "Disponible" || p.status === "Activo").length,
     totalClientsCount: clients.length
   };
 
   return {
     business,
     packages,
+    spaces: packages,
     requests,
     quotes,
     events,

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { LaAntiguaLogoIcon, WhatsAppIcon } from "../common/Icons";
+import { LaCanteraLogoIcon, WhatsAppIcon, MailIcon, PhoneIcon, MapPinIcon } from "../common/Icons";
 import { initialBusinessData } from "../../data/eventFlowData";
 
 export const Footer = () => {
@@ -11,14 +11,14 @@ export const Footer = () => {
           {/* Brand Col */}
           <div className="footer-brand-col">
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
-              <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "var(--color-terracotta)", color: "var(--color-white)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <LaAntiguaLogoIcon size={22} />
+              <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "var(--color-black)", color: "var(--color-gold)", border: "1px solid var(--color-arena)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <LaCanteraLogoIcon size={22} />
               </div>
               <h3 className="footer-brand-title">{initialBusinessData.name}</h3>
             </div>
-            <span className="footer-brand-subtitle">Romantic Modern Venue · Reynosa</span>
+            <span className="footer-brand-subtitle">Large Event Venue Experience · Reynosa, Tamaulipas</span>
             <p className="footer-brand-desc">
-              Propuesta interactiva para consultar disponibilidad de fechas, cotizar paquetes, realizar apartados demostrativos y organizar celebraciones.
+              Recinto de gran escala arquitectónica para bodas de gala, graduaciones masivas, congresos, conferencias y eventos empresariales.
             </p>
           </div>
 
@@ -27,33 +27,44 @@ export const Footer = () => {
             <h4 className="footer-col-heading">Navegación</h4>
             <ul className="footer-links-list">
               <li className="footer-link-item"><Link to="/">Inicio</Link></li>
-              <li className="footer-link-item"><a href="#experiencias">Experiencias</a></li>
-              <li className="footer-link-item"><a href="#paquetes">Paquetes demo</a></li>
+              <li className="footer-link-item"><a href="#espacios">Espacios demo</a></li>
+              <li className="footer-link-item"><a href="#corporativo">Eventos corporativos</a></li>
+              <li className="footer-link-item"><a href="#eventos">Formatos y montajes</a></li>
               <li className="footer-link-item"><a href="#disponibilidad">Disponibilidad en vivo</a></li>
               <li className="footer-link-item"><Link to="/cotizar">Cotizador interactivo</Link></li>
-              <li className="footer-link-item"><a href="#contacto">Contacto y citas</a></li>
+              <li className="footer-link-item"><a href="#contacto">Contacto y atención</a></li>
             </ul>
           </div>
 
           {/* Nav Col 2 */}
           <div>
-            <h4 className="footer-col-heading">Celebraciones</h4>
+            <h4 className="footer-col-heading">Tipos de Evento</h4>
             <ul className="footer-links-list">
-              <li className="footer-link-item"><Link to="/cotizar?tipo=boda">Bodas y recepciones</Link></li>
+              <li className="footer-link-item"><Link to="/cotizar?tipo=boda">Bodas magnas</Link></li>
               <li className="footer-link-item"><Link to="/cotizar?tipo=xv-anos">XV Años de gala</Link></li>
-              <li className="footer-link-item"><Link to="/cotizar?tipo=cumpleanos">Cumpleaños</Link></li>
               <li className="footer-link-item"><Link to="/cotizar?tipo=graduacion">Graduaciones</Link></li>
-              <li className="footer-link-item"><Link to="/cotizar?tipo=aniversario">Aniversarios</Link></li>
-              <li className="footer-link-item"><Link to="/cotizar?tipo=corporativo">Eventos corporativos</Link></li>
+              <li className="footer-link-item"><Link to="/cotizar?tipo=posada">Posadas y fin de año</Link></li>
+              <li className="footer-link-item"><Link to="/cotizar?tipo=conferencia">Conferencias</Link></li>
+              <li className="footer-link-item"><Link to="/cotizar?tipo=congreso">Congresos masivos</Link></li>
+              <li className="footer-link-item"><Link to="/cotizar?tipo=evento-empresarial">Cenas empresariales</Link></li>
             </ul>
           </div>
 
           {/* Contact Col */}
           <div>
-            <h4 className="footer-col-heading">Atención Directa</h4>
+            <h4 className="footer-col-heading">Atención y Citas</h4>
             <div className="footer-contact-info">
               <a 
-                href={initialBusinessData.whatsappUrl + "?text=" + encodeURIComponent("Hola La Antigua Eventos, me interesa solicitar informes para mi evento.")} 
+                href={`tel:${initialBusinessData.phone}`}
+                className="footer-contact-pill"
+                style={{ color: "#FFFFFF" }}
+              >
+                <PhoneIcon size={15} style={{ color: "var(--color-gold)" }} />
+                <span>Tel: {initialBusinessData.phoneFormatted}</span>
+              </a>
+
+              <a 
+                href={initialBusinessData.whatsappUrl + "?text=" + encodeURIComponent("Hola La Cantera Events, deseo solicitar informes para mi evento.")} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="footer-contact-pill"
@@ -64,17 +75,24 @@ export const Footer = () => {
               </a>
 
               <a 
-                href={initialBusinessData.instagramUrl} 
+                href={`mailto:${initialBusinessData.email}`} 
+                className="footer-contact-pill"
+                style={{ color: "#FFFFFF" }}
+              >
+                <MailIcon size={15} style={{ color: "var(--color-gold)" }} />
+                <span>{initialBusinessData.email}</span>
+              </a>
+
+              <a 
+                href={initialBusinessData.googleMapsUrl}
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="footer-contact-pill"
+                style={{ color: "#FFFFFF" }}
               >
-                <span>Instagram: @{initialBusinessData.instagram}</span>
+                <MapPinIcon size={15} style={{ color: "var(--color-gold)", flexShrink: 0 }} />
+                <span>{initialBusinessData.addressShort}, {initialBusinessData.city}</span>
               </a>
-
-              <span style={{ fontSize: "0.8rem", color: "#A8A29E", lineHeight: 1.5 }}>
-                {initialBusinessData.city}
-              </span>
             </div>
           </div>
         </div>

@@ -20,7 +20,7 @@ export const AdminCalendarPage = () => {
     { label: "Disponible", color: "#10B981", bg: "#ECFDF5", border: "#A7F3D0" },
     { label: "Solicitud", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE" },
     { label: "Cotización", color: "#D97706", bg: "#FEF3C7", border: "#FDE68A" },
-    { label: "Apartado", color: "#A86C60", bg: "#F9EFEF", border: "#D8B5AF" },
+    { label: "Apartado", color: "#8C734B", bg: "#F7F3EB", border: "#D8C7AA" },
     { label: "Confirmado", color: "#059669", bg: "#D1FAE5", border: "#6EE7B7" },
     { label: "Bloqueado", color: "#4B5563", bg: "#F3F4F6", border: "#E5E7EB" }
   ];
@@ -101,7 +101,7 @@ export const AdminCalendarPage = () => {
               {currentMonthName}
             </h2>
             <span style={{ fontSize: "0.82rem", color: "var(--color-text-secondary)" }}>
-              Agenda operativa y calendario de disponibilidad demostrativa de La Antigua Eventos
+              Agenda operativa y calendario de disponibilidad demostrativa de La Cantera Events
             </span>
           </div>
 

@@ -2,8 +2,9 @@ import React, { useEffect } from "react";
 import { Hero } from "../../components/landing/Hero";
 import { AvailabilityCalendarSection } from "../../components/landing/AvailabilityCalendarSection";
 import { IntroSection } from "../../components/landing/IntroSection";
-import { EventTypesSection } from "../../components/landing/EventTypesSection";
 import { PackagesSection } from "../../components/landing/PackagesSection";
+import { CorporateSection } from "../../components/landing/CorporateSection";
+import { EventTypesSection } from "../../components/landing/EventTypesSection";
 import { ExperienceSection } from "../../components/landing/ExperienceSection";
 import { ProblemSolutionSection } from "../../components/landing/ProblemSolutionSection";
 import { FinalCtaSection } from "../../components/landing/FinalCtaSection";
@@ -17,7 +18,7 @@ export const HomePage = () => {
   });
 
   useEffect(() => {
-    // Si viene con ancla hash e.g. #paquetes, #contacto, #disponibilidad, #experiencias
+    // Si viene con ancla hash e.g. #espacios, #corporativo, #eventos, #contacto, #disponibilidad
     if (window.location.hash) {
       const id = window.location.hash.replace("#", "");
       const elem = document.getElementById(id);
@@ -34,8 +35,9 @@ export const HomePage = () => {
       <Hero />
       <AvailabilityCalendarSection />
       <IntroSection />
-      <EventTypesSection />
       <PackagesSection />
+      <CorporateSection />
+      <EventTypesSection />
       <ExperienceSection />
       <ProblemSolutionSection />
       <LocationContact />

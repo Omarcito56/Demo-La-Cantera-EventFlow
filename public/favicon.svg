@@ -1,10 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#A86C60" />
-  <g transform="translate(4, 4)" stroke="#D8C6A5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Emblema refinado La Antigua: Arco arquitectónico, detalle botánico y estrella -->
-    <path d="M4 22V10a8 8 0 0 1 16 0v12" stroke="#FAF6EF" stroke-width="1.6" fill="#FAF6EF" fill-opacity="0.12" />
-    <path d="M12 6v4M10 8h4" stroke="#D8C6A5" stroke-width="1.5" />
-    <circle cx="12" cy="14" r="2.2" fill="#D8C6A5" stroke="none" />
-    <path d="M7 22h10" stroke="#D8C6A5" stroke-width="1.5" />
+  <rect width="32" height="32" rx="8" fill="#181818" />
+  <g transform="translate(4, 4)" stroke="#B9A176" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Emblema La Cantera Events: Columnas y frontón arquitectónico de gran escala -->
+    <path d="M2 7l10-5 10 5v2H2V7z" fill="#D8C7AA" fill-opacity="0.25" stroke="#B9A176" />
+    <path d="M5 9v11M12 9v11M19 9v11" stroke="#D8C7AA" stroke-width="1.6" />
+    <path d="M1 20h22v2H1v-2z" fill="#B9A176" stroke="#B9A176" />
   </g>
 </svg>

@@ -18,6 +18,7 @@ export const AdminRequestsPage = () => {
 
   const REQUEST_STATUSES = [
     "Nueva",
+    "En revisión",
     "Contactado",
     "Cotizando",
     "Esperando anticipo",
@@ -29,7 +30,8 @@ export const AdminRequestsPage = () => {
     const matchesSearch = 
       (req.folio && req.folio.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (req.clientName && req.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (req.eventType && req.eventType.toLowerCase().includes(searchTerm.toLowerCase()));
+      (req.eventType && req.eventType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ((req.spaceName || req.packageName) && (req.spaceName || req.packageName).toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesStatus = filterStatus === "todos" || req.status === filterStatus;
     return matchesSearch && matchesStatus;
@@ -65,7 +67,7 @@ export const AdminRequestsPage = () => {
               <SearchIcon size={16} />
               <input
                 type="text"
-                placeholder="Buscar por folio, cliente o evento..."
+                placeholder="Buscar por folio, cliente o espacio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -91,16 +93,18 @@ export const AdminRequestsPage = () => {
           </div>
         </div>
 
-        {/* Tabla solicitada: Folio | Cliente | Fecha | Evento | Invitados | Estimado | Estado | Acciones */}
+        {/* Tabla Oficial Requerida:
+            Folio | Cliente | Evento | Asistentes | Espacio | Fecha | Estimado | Estado | Acciones */}
         <div className="table-responsive-container">
           <table className="admin-data-table">
             <thead>
               <tr>
                 <th>Folio</th>
                 <th>Cliente</th>
-                <th>Fecha</th>
                 <th>Evento</th>
-                <th>Invitados</th>
+                <th>Asistentes</th>
+                <th>Espacio</th>
+                <th>Fecha</th>
                 <th>Estimado</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -116,9 +120,12 @@ export const AdminRequestsPage = () => {
                       {req.clientPhone}
                     </div>
                   </td>
-                  <td style={{ fontWeight: 600 }}>{req.date}</td>
                   <td>{req.eventType}</td>
-                  <td>{req.guests} personas</td>
+                  <td style={{ fontWeight: 600 }}>{req.guests} personas</td>
+                  <td style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>
+                    {req.spaceName || req.packageName || "Salón Principal"}
+                  </td>
+                  <td style={{ fontWeight: 600 }}>{req.date}</td>
                   <td style={{ fontWeight: 700, color: "var(--color-charcoal-deep)" }}>
                     ${(req.estimatedTotal || 0).toLocaleString("es-MX")} MXN
                   </td>

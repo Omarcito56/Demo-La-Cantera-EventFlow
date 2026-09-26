@@ -1,12 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { eventTypesList } from "../../data/eventFlowData";
-import { ArrowRightIcon } from "../common/Icons";
+import { ArrowRightIcon, SparklesIcon } from "../common/Icons";
 import { trackEvent } from "../../analytics/analytics";
 
 export const EventTypesSection = () => {
-  const allowedTypes = eventTypesList.filter(t => t.id !== "otro");
-
   const handleTypeClick = (typeId) => {
     trackEvent("demo_cta_clicked", {
       cta_name: "select_event_type_card",
@@ -16,35 +14,39 @@ export const EventTypesSection = () => {
   };
 
   return (
-    <section className="event-types-section" id="experiencias">
+    <section className="event-types-section" id="eventos">
       <div className="container">
         <div className="section-header-centered">
-          <span className="eyebrow">EXPERIENCIAS A TU MEDIDA</span>
-          <h2 className="section-title-editorial">Cada celebración comienza diferente</h2>
+          <span className="eyebrow">CELEBRACIONES Y ENCUENTROS DE GRAN ESCALA</span>
+          <h2 className="section-title-editorial">Diseñado para cada tipo de evento</h2>
           <p className="section-subtext">
-            Espacios versátiles, montajes distinguidos y ambientación romántica moderna para que cada evento en La Antigua Eventos tenga un sello único e inolvidable.
+            Desde bodas íntimas o fastuosas galas de XV años, hasta graduaciones universitarias y magnos congresos empresariales en La Cantera Events.
           </p>
         </div>
 
-        <div className="event-types-grid">
-          {allowedTypes.map((type) => (
+        {/* 9 Event Types Grid */}
+        <div className="event-types-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
+          {eventTypesList.map((type) => (
             <Link 
               key={type.id} 
-              to={`/cotizar?tipo=${type.id}&paquete=${type.popularPackage}`}
+              to={`/cotizar?tipo=${type.id}&espacio=${type.popularSpace}`}
               className="event-type-card"
               onClick={() => handleTypeClick(type.id)}
             >
               <img 
                 src={type.image} 
-                alt={`Celebración de ${type.name} en La Antigua Eventos`} 
+                alt={`${type.name} en La Cantera Events`} 
                 className="event-type-bg-img"
                 loading="lazy"
               />
               <div className="event-type-gradient-overlay" />
               <div className="event-type-card-content">
+                <span style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gold)", fontWeight: 700, marginBottom: "0.25rem", display: "block" }}>
+                  {type.category === "corporativo" ? "Corporativo / Académico" : "Social & Gala"}
+                </span>
                 <h3 className="event-type-name">{type.name}</h3>
                 <p className="event-type-sub">{type.subtitle}</p>
-                <div className="event-type-cta-link">
+                <div className="event-type-cta-link" style={{ color: "var(--color-gold)" }}>
                   <span>Cotizar {type.name}</span>
                   <ArrowRightIcon size={14} />
                 </div>

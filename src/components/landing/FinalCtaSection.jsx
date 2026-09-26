@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { ArrowRightIcon, CalendarIcon } from "../common/Icons";
 import { trackEvent } from "../../analytics/analytics";
 
@@ -7,35 +8,50 @@ export const FinalCtaSection = () => {
     <section className="final-cta-section">
       <img 
         src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1500&q=80" 
-        alt="Recepción romántica de celebración en La Antigua Eventos" 
+        alt="Montaje de gala en La Cantera Events" 
         className="final-cta-bg-img"
         loading="lazy"
       />
       <div className="container">
         <div className="final-cta-content">
-          <span className="eyebrow" style={{ color: "var(--color-champagne)" }}>
-            DISPONIBILIDAD INMEDIATA
+          <span className="eyebrow" style={{ color: "var(--color-gold)" }}>
+            PLANEA TU EVENTO DE GRAN ESCALA
           </span>
           <h2 className="final-cta-title">
             Todo empieza con una fecha.
           </h2>
           <p className="final-cta-text">
-            Consulta disponibilidad y comienza a organizar tu próxima celebración.
+            Explora nuestros espacios, personaliza los detalles de tu evento y solicita una cotización demostrativa en tiempo real.
           </p>
-          <a 
-            href="#disponibilidad" 
-            className="btn btn-accent btn-lg"
-            onClick={() => {
-              trackEvent("demo_cta_clicked", {
-                cta_name: "consultar_mi_fecha_final",
-                location: "final_cta_section"
-              });
-            }}
-          >
-            <CalendarIcon size={18} />
-            <span>Consultar mi fecha</span>
-            <ArrowRightIcon size={18} />
-          </a>
+          <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap", marginTop: "1.5rem" }}>
+            <Link 
+              to="/cotizar" 
+              className="btn btn-accent btn-lg"
+              onClick={() => {
+                trackEvent("demo_cta_clicked", {
+                  cta_name: "planear_evento_final_cta",
+                  location: "final_cta_section"
+                });
+              }}
+            >
+              <span>Planear mi evento</span>
+              <ArrowRightIcon size={18} />
+            </Link>
+
+            <a 
+              href="#disponibilidad" 
+              className="btn btn-outline-white btn-lg"
+              onClick={() => {
+                trackEvent("demo_cta_clicked", {
+                  cta_name: "consultar_fecha_final_cta",
+                  location: "final_cta_section"
+                });
+              }}
+            >
+              <CalendarIcon size={18} />
+              <span>Consultar fecha</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>

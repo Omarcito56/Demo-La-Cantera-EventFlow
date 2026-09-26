@@ -18,14 +18,14 @@ export const AdminLayout = () => {
     const path = location.pathname;
     if (path.includes("/dashboard")) return "Resumen General · EventFlow";
     if (path.includes("/solicitudes")) return "Solicitudes de Eventos";
+    if (path.includes("/espacios") || path.includes("/paquetes")) return "Espacios y Salones Demo";
     if (path.includes("/calendario")) return "Calendario y Disponibilidad";
+    if (path.includes("/cotizaciones")) return "Cotizaciones Emitidas";
     if (path.includes("/eventos")) return "Eventos Confirmados";
     if (path.includes("/clientes")) return "Directorio de Clientes";
-    if (path.includes("/cotizaciones")) return "Cotizaciones Emitidas";
     if (path.includes("/pagos")) return "Anticipos y Pagos";
-    if (path.includes("/paquetes")) return "Catálogo de Paquetes Demo";
     if (path.includes("/configuracion")) return "Configuración del Sistema";
-    return "Panel de Administración · La Antigua Eventos";
+    return "Panel de Administración · La Cantera Events";
   };
 
   return (

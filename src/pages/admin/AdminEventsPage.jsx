@@ -24,7 +24,8 @@ export const AdminEventsPage = () => {
     const matchesSearch = 
       (evt.folio && evt.folio.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (evt.clientName && evt.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (evt.eventType && evt.eventType.toLowerCase().includes(searchTerm.toLowerCase()));
+      (evt.eventType && evt.eventType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ((evt.spaceName || evt.packageName) && (evt.spaceName || evt.packageName).toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesStatus = filterStatus === "todos" || evt.status === filterStatus;
     return matchesSearch && matchesStatus;
@@ -37,7 +38,7 @@ export const AdminEventsPage = () => {
   };
 
   const handleQuickPayment = (evt) => {
-    const paymentAmt = Math.min(10000, evt.balance || 5000);
+    const paymentAmt = Math.min(10000, evt.balance || 8000);
     if (paymentAmt <= 0) return;
 
     registerDepositDemo(evt.folio, {
@@ -68,7 +69,7 @@ export const AdminEventsPage = () => {
               <SearchIcon size={16} />
               <input
                 type="text"
-                placeholder="Buscar evento por folio o cliente..."
+                placeholder="Buscar evento por folio, cliente o espacio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -94,16 +95,17 @@ export const AdminEventsPage = () => {
           </div>
         </div>
 
-        {/* Tabla solicitada: Folio | Cliente | Evento | Fecha | Invitados | Total | Pagado | Saldo | Estado | Acciones */}
+        {/* Tabla Oficial Requerida:
+            Evento | Fecha | Asistentes | Espacio | Total | Pagado | Saldo | Estado (+ Folio y Acciones) */}
         <div className="table-responsive-container">
           <table className="admin-data-table">
             <thead>
               <tr>
                 <th>Folio</th>
-                <th>Cliente</th>
                 <th>Evento</th>
                 <th>Fecha</th>
-                <th>Invitados</th>
+                <th>Asistentes</th>
+                <th>Espacio</th>
                 <th>Total</th>
                 <th>Pagado</th>
                 <th>Saldo</th>
@@ -115,10 +117,17 @@ export const AdminEventsPage = () => {
               {filteredEvents.map((evt) => (
                 <tr key={evt.id}>
                   <td className="folio-cell">{evt.folio}</td>
-                  <td className="client-name-cell ph-mask">{evt.clientName}</td>
-                  <td>{evt.eventType}</td>
+                  <td style={{ fontWeight: 600 }}>
+                    {evt.eventType}
+                    <div style={{ fontSize: "0.74rem", color: "var(--color-text-muted)", fontWeight: 400 }} className="ph-mask">
+                      {evt.clientName}
+                    </div>
+                  </td>
                   <td style={{ fontWeight: 600 }}>{evt.date}</td>
                   <td>{evt.guests} pax</td>
+                  <td style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>
+                    {evt.spaceName || evt.packageName || "Salón Principal"}
+                  </td>
                   <td style={{ fontWeight: 600 }}>${(evt.total || 0).toLocaleString("es-MX")}</td>
                   <td style={{ color: "#059669", fontWeight: 600 }}>${(evt.paid || 0).toLocaleString("es-MX")}</td>
                   <td style={{ color: evt.balance > 0 ? "#DC2626" : "var(--color-text-muted)", fontWeight: 600 }}>

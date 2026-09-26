@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useEventData } from "../../hooks/useEventData";
 import { 
   FileTextIcon, CalendarIcon, CreditCardIcon, 
-  EyeIcon, ArrowRightIcon, CheckCircleIcon, SendIcon, SparklesIcon 
+  EyeIcon, ArrowRightIcon, CheckCircleIcon, SendIcon, SparklesIcon, UsersIcon, BuildingIcon 
 } from "../../components/common/Icons";
 import { StatusBadge } from "../../components/common/StatusBadge";
 import { EventDetailModal } from "../../components/admin/EventDetailModal";
@@ -28,40 +28,45 @@ export const AdminDashboardPage = () => {
       {/* Disclaimer de datos demo */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", padding: "0.6rem 1rem", backgroundColor: "#FEF3C7", borderRadius: "var(--radius-sm)", border: "1px solid #FDE68A", fontSize: "0.82rem", color: "#92400E" }}>
         <span>
-          <strong>Entorno de Demostración Comercial:</strong> Métricas, folios y saldos mostrados son simulaciones para La Antigua Eventos en BS EventFlow.
+          <strong>Entorno de Demostración Comercial:</strong> Métricas, folios y saldos mostrados son simulaciones para La Cantera Events en BS EventFlow.
         </span>
         <span style={{ fontWeight: 700, textTransform: "uppercase", fontSize: "0.72rem" }}>Datos Demostrativos</span>
       </div>
 
-      {/* 5 Métricas Demo Oficiales con Protagonismo a Fechas */}
-      <div className="stats-grid">
-        {/* 1. Solicitudes Nuevas */}
+      {/* 5 Métricas Demo Oficiales Requeridas:
+          1. Solicitudes nuevas
+          2. Eventos próximos
+          3. Cotizaciones pendientes
+          4. Asistentes proyectados
+          5. Anticipos registrados */}
+      <div className="stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+        {/* 1. Solicitudes nuevas */}
         <div className="stat-card">
           <div>
-            <div className="stat-val" style={{ color: "var(--color-terracotta)" }}>
+            <div className="stat-val" style={{ color: "var(--color-primary)" }}>
               {metrics.newRequests}
             </div>
             <div className="stat-label">Solicitudes nuevas</div>
           </div>
-          <div className="stat-icon-wrap" style={{ backgroundColor: "var(--color-terracotta-soft)", color: "var(--color-terracotta)" }}>
+          <div className="stat-icon-wrap" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-primary)" }}>
             <FileTextIcon size={22} />
           </div>
         </div>
 
-        {/* 2. Fechas Consultadas (Protagonista) */}
-        <div className="stat-card" style={{ borderColor: "rgba(168, 108, 96, 0.35)", backgroundColor: "#FAF7F2" }}>
+        {/* 2. Eventos próximos */}
+        <div className="stat-card">
           <div>
-            <div className="stat-val" style={{ color: "var(--color-charcoal-deep)" }}>
-              {metrics.datesConsulted}
+            <div className="stat-val" style={{ color: "#059669" }}>
+              {metrics.upcomingEvents}
             </div>
-            <div className="stat-label">Fechas consultadas</div>
+            <div className="stat-label">Eventos próximos</div>
           </div>
-          <div className="stat-icon-wrap" style={{ backgroundColor: "#EFF6FF", color: "#2563EB" }}>
-            <CalendarIcon size={22} />
+          <div className="stat-icon-wrap" style={{ backgroundColor: "#ECFDF5", color: "#059669" }}>
+            <SparklesIcon size={22} />
           </div>
         </div>
 
-        {/* 3. Cotizaciones Pendientes */}
+        {/* 3. Cotizaciones pendientes */}
         <div className="stat-card">
           <div>
             <div className="stat-val" style={{ color: "#D97706" }}>
@@ -74,28 +79,28 @@ export const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* 4. Eventos Confirmados */}
-        <div className="stat-card">
+        {/* 4. Asistentes proyectados */}
+        <div className="stat-card" style={{ borderColor: "var(--border-arena)", backgroundColor: "#FAF8F4" }}>
           <div>
-            <div className="stat-val" style={{ color: "#059669" }}>
-              {metrics.confirmedEvents}
+            <div className="stat-val" style={{ color: "var(--color-charcoal-deep)" }}>
+              {metrics.projectedGuests.toLocaleString("es-MX")}
             </div>
-            <div className="stat-label">Eventos confirmados</div>
+            <div className="stat-label">Asistentes proyectados</div>
           </div>
-          <div className="stat-icon-wrap" style={{ backgroundColor: "#ECFDF5", color: "#059669" }}>
-            <CheckCircleIcon size={22} />
+          <div className="stat-icon-wrap" style={{ backgroundColor: "#EFF6FF", color: "#2563EB" }}>
+            <UsersIcon size={22} />
           </div>
         </div>
 
-        {/* 5. Anticipos Registrados */}
+        {/* 5. Anticipos registrados */}
         <div className="stat-card">
           <div>
-            <div className="stat-val" style={{ color: "var(--color-terracotta)" }}>
+            <div className="stat-val" style={{ color: "var(--color-primary)" }}>
               ${metrics.totalDeposits.toLocaleString("es-MX")}
             </div>
             <div className="stat-label">Anticipos registrados</div>
           </div>
-          <div className="stat-icon-wrap" style={{ backgroundColor: "var(--color-terracotta-soft)", color: "var(--color-terracotta)" }}>
+          <div className="stat-icon-wrap" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-primary)" }}>
             <CreditCardIcon size={22} />
           </div>
         </div>
@@ -122,6 +127,7 @@ export const AdminDashboardPage = () => {
                   <th>Folio</th>
                   <th>Cliente</th>
                   <th>Evento</th>
+                  <th>Espacio</th>
                   <th>Fecha</th>
                   <th>Estimado</th>
                   <th>Estado</th>
@@ -134,6 +140,9 @@ export const AdminDashboardPage = () => {
                     <td className="folio-cell">{req.folio}</td>
                     <td className="client-name-cell ph-mask">{req.clientName}</td>
                     <td>{req.eventType}</td>
+                    <td style={{ fontSize: "0.82rem", color: "var(--color-text-secondary)" }}>
+                      {req.spaceName || req.packageName || "Salón Principal"}
+                    </td>
                     <td>{req.date}</td>
                     <td style={{ fontWeight: 600 }}>${(req.estimatedTotal || 0).toLocaleString("es-MX")}</td>
                     <td><StatusBadge status={req.status} /></td>
@@ -155,13 +164,13 @@ export const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* MÓDULO SOLICITADO: Próximas Fechas */}
+        {/* Próximas Fechas y Eventos en Agenda */}
         <div className="admin-card-table">
           <div className="admin-table-toolbar">
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <CalendarIcon size={18} style={{ color: "var(--color-terracotta)" }} />
+              <CalendarIcon size={18} style={{ color: "var(--color-gold)" }} />
               <h3 style={{ fontSize: "1.05rem", color: "var(--color-charcoal-deep)" }}>
-                Próximas fechas
+                Próximos eventos
               </h3>
             </div>
             <Link to="/admin/calendario" className="btn btn-outline btn-sm">
@@ -186,7 +195,7 @@ export const AdminDashboardPage = () => {
               >
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.25rem" }}>
-                    <span style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-terracotta)" }}>
+                    <span style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-primary)" }}>
                       {evt.date}
                     </span>
                     <span style={{ fontSize: "0.76rem", color: "var(--color-text-muted)" }}>
@@ -196,7 +205,7 @@ export const AdminDashboardPage = () => {
                   <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--color-charcoal-deep)" }}>
                     {evt.eventType}
                     <span style={{ fontSize: "0.8rem", fontWeight: 400, color: "var(--color-text-secondary)", marginLeft: "0.5rem" }} className="ph-mask">
-                      · {evt.clientName} ({evt.guests} pax)
+                      · {evt.spaceName || evt.packageName} ({evt.guests} pax)
                     </span>
                   </div>
                 </div>

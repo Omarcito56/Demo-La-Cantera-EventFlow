@@ -95,14 +95,10 @@ export const EventDetailModal = ({ item, isOpen, onClose }) => {
           {/* Grid de Información */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "1.5rem" }}>
             <div>
-              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Cliente</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Cliente / Contacto</span>
               <div style={{ fontWeight: 600, color: "var(--color-charcoal-deep)" }} className="ph-mask">{item.clientName}</div>
               <div style={{ fontSize: "0.82rem", color: "var(--color-text-secondary)" }} className="ph-mask">{item.clientPhone} · {item.clientEmail}</div>
-            </div>
-
-            <div>
-              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Ubicación / Zona</span>
-              <div style={{ fontWeight: 600, color: "var(--color-charcoal-deep)" }} className="ph-mask">{item.cityZone || "No especificada"}</div>
+              {item.company && <div style={{ fontSize: "0.8rem", color: "var(--color-accent)", marginTop: "0.2rem" }} className="ph-mask">Empresa: {item.company}</div>}
             </div>
 
             <div>
@@ -121,12 +117,17 @@ export const EventDetailModal = ({ item, isOpen, onClose }) => {
             </div>
 
             <div>
-              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Paquete Solicitado</span>
-              <div style={{ fontWeight: 600, color: "var(--color-charcoal-deep)" }}>{item.packageName}</div>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Espacio Solicitado</span>
+              <div style={{ fontWeight: 600, color: "var(--color-charcoal-deep)" }}>{item.spaceName || item.packageName || "Salón Principal"}</div>
             </div>
 
             <div>
-              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Presupuesto Estimado</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Montaje Sugerido</span>
+              <div style={{ fontWeight: 600, color: "var(--color-charcoal-deep)" }}>{item.layoutType || "Banquete"}</div>
+            </div>
+
+            <div>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Presupuesto Estimado (Demo)</span>
               <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--color-accent)" }}>
                 ${(item.estimatedTotal || 0).toLocaleString("es-MX")} MXN
               </div>
@@ -138,6 +139,15 @@ export const EventDetailModal = ({ item, isOpen, onClose }) => {
                 ${(item.suggestedDeposit || 5000).toLocaleString("es-MX")} MXN
               </div>
             </div>
+
+            {item.services && item.services.length > 0 && (
+              <div style={{ gridColumn: "1 / -1" }}>
+                <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Servicios Adicionales Demo:</span>
+                <div style={{ fontSize: "0.85rem", color: "var(--color-charcoal-deep)", fontWeight: 500, marginTop: "0.25rem" }}>
+                  {item.services.join(" · ")}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Comentarios del cliente */}

@@ -116,6 +116,38 @@
   gap: 0.75rem;
 }
 
+.navbar-action-quote {
+  background: #181818 !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid #181818 !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-fast);
+}
+
+.navbar-action-quote:hover {
+  background: #2E2822 !important;
+  border-color: #B9A176 !important;
+  color: #B9A176 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.navbar-action-calendar {
+  background: #FFFFFF !important;
+  color: #181818 !important;
+  border: 1.5px solid #D8C7AA !important;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.navbar-action-calendar:hover {
+  background: #FAF8F4 !important;
+  border-color: #B9A176 !important;
+  color: #181818 !important;
+  transform: translateY(-1px);
+}
+
 .navbar-action-whatsapp {
   display: inline-flex;
   align-items: center;

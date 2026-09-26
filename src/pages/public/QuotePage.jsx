@@ -4,14 +4,16 @@ import { useEventData } from "../../hooks/useEventData";
 import { 
   initialExtrasData, 
   eventTypesList, 
-  mockAvailabilityMap,
+  initialSpacesData,
+  layoutOptionsList,
+  guestRangesList,
   getDateAvailabilityStatus 
 } from "../../data/eventFlowData";
 import { 
   CalendarIcon, CheckIcon, SparklesIcon, 
   ArrowRightIcon, ArrowLeftIcon, AlertCircleIcon,
   HeartIcon, BriefcaseIcon, GiftIcon, AcademicIcon, StarIcon, UsersIcon,
-  ChevronLeftIcon, ChevronRightIcon
+  ChevronLeftIcon, ChevronRightIcon, BuildingIcon, UtensilsIcon, WineIcon
 } from "../../components/common/Icons";
 
 import { 
@@ -24,30 +26,32 @@ import {
 export const QuotePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { packages, business, createRequest } = useEventData();
+  const { spaces, business, createRequest } = useEventData();
 
-  // Stepper Oficial de 7 Pasos
+  // Stepper Oficial de 8 Pasos
   const [currentStep, setCurrentStep] = useState(1);
   const [errorMsg, setErrorMsg] = useState("");
 
   const today = new Date();
   const todayISO = today.toISOString().split("T")[0];
 
-  // Leer parámetros de URL si viene de landing o calendario
+  // Leer parámetros de URL si viene de landing
   const paramDate = searchParams.get("fecha") || "";
   const paramType = searchParams.get("tipo") || "boda";
-  const paramPkg = searchParams.get("paquete") || "celebracion";
+  const paramSpace = searchParams.get("espacio") || searchParams.get("paquete") || "salon-principal";
 
   const [quoteState, setQuoteState] = useState({
-    date: paramDate,
     eventType: paramType,
-    guests: 120,
-    packageId: paramPkg,
-    selectedExtras: [],
+    guests: 250,
+    guestRangeId: "251-500",
+    spaceId: paramSpace,
+    layoutId: "banquete",
+    selectedExtras: ["catering", "audio", "iluminacion"],
+    date: paramDate,
     clientName: "",
     clientPhone: "",
     clientEmail: "",
-    cityZone: "",
+    company: "",
     comments: "",
     privacyAccepted: false
   });
@@ -57,36 +61,53 @@ export const QuotePage = () => {
   }, []);
 
   useTrackOnMount("quote_started", {
-    flow_type: "event_quote",
+    flow_type: "event_quote_8steps",
     route: "/cotizar",
     has_initial_date: Boolean(paramDate),
     initial_event_type: paramType
   });
 
-  // Paquete / Opción elegida
-  const selectedPackage = packages.find(p => p.id === quoteState.packageId) || packages[0];
-  const basePrice = selectedPackage.priceNumber || 25000;
-  const baseGuests = selectedPackage.baseGuests || 120;
-  const extraGuestPrice = selectedPackage.extraGuestPrice || 200;
+  // Espacio seleccionado
+  const availableSpaces = (spaces && spaces.length >= 3) ? spaces : initialSpacesData;
+  const selectedSpace = availableSpaces.find(s => s.id === quoteState.spaceId) || availableSpaces[0];
 
-  // Cálculo Dinámico en Tiempo Real
+  // Montaje seleccionado
+  const selectedLayout = layoutOptionsList.find(l => l.id === quoteState.layoutId) || layoutOptionsList[0];
+
+  // Tipo de evento seleccionado
+  const selectedTypeObj = eventTypesList.find(t => t.id === quoteState.eventType) || eventTypesList[0];
+
+  // Precios base demostrativos
+  const basePrice = selectedSpace.priceNumber || 45000;
+  const baseGuests = selectedSpace.baseGuests || 200;
+  const extraGuestPrice = selectedSpace.extraGuestPrice || 180;
+
+  // Ajuste por asistentes adicionales demo
   const extraGuestsCount = Math.max(0, quoteState.guests - baseGuests);
   const guestsAdjustment = extraGuestsCount * extraGuestPrice;
 
-  // Suma de extras seleccionados
+  // Ajuste por montaje demo
+  const layoutAdjustmentMap = {
+    banquete: 0,
+    auditorio: 2000,
+    cocktail: 2500,
+    conferencia: 2000,
+    "cena-formal": 3500,
+    otro: 0
+  };
+  const layoutAdjustment = layoutAdjustmentMap[quoteState.layoutId] || 0;
+
+  // Suma de servicios extras demo
   const extrasTotal = quoteState.selectedExtras.reduce((sum, extraId) => {
     const extraObj = initialExtrasData.find(e => e.id === extraId);
     return sum + (extraObj ? extraObj.price : 0);
   }, 0);
 
-  const estimatedTotal = basePrice + guestsAdjustment + extrasTotal;
-  const suggestedDeposit = 5000; // Anticipo demo base
+  // Estimado Total DEMO
+  const estimatedTotal = basePrice + guestsAdjustment + layoutAdjustment + extrasTotal;
+  const suggestedDeposit = 8000; // Anticipo demo
 
-  // Derivar nombre del tipo de evento
-  const selectedTypeObj = eventTypesList.find(t => t.id === quoteState.eventType);
-  const eventTypeName = selectedTypeObj ? selectedTypeObj.name : "Boda";
-
-  // Disponibilidad de la fecha con 4 estados oficiales
+  // Estados de disponibilidad para la fecha
   const getDateStatus = (dateStr) => {
     if (!dateStr) return null;
     return getDateAvailabilityStatus(dateStr);
@@ -94,7 +115,7 @@ export const QuotePage = () => {
 
   const selectedDateStatus = getDateStatus(quoteState.date);
 
-  // Estado para el mes visualizado en el calendario interactivo del Cotizador
+  // Vista de mes en el calendario
   const [calendarViewDate, setCalendarViewDate] = useState(() => {
     if (paramDate) {
       const parts = paramDate.split("-").map(Number);
@@ -107,10 +128,7 @@ export const QuotePage = () => {
 
   const viewYear = calendarViewDate.getFullYear();
   const viewMonth = calendarViewDate.getMonth();
-
-  const isCurrentMonthView = 
-    viewYear === today.getFullYear() && 
-    viewMonth === today.getMonth();
+  const isCurrentMonthView = viewYear === today.getFullYear() && viewMonth === today.getMonth();
 
   const handlePrevMonth = () => {
     if (isCurrentMonthView) return;
@@ -121,16 +139,12 @@ export const QuotePage = () => {
     setCalendarViewDate(new Date(viewYear, viewMonth + 1, 1));
   };
 
-  const handleGoToCurrentMonth = () => {
-    setCalendarViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
-  };
-
   const monthLabel = calendarViewDate.toLocaleDateString("es-MX", {
     month: "long",
     year: "numeric"
   });
 
-  const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay(); // 0 = Domingo
+  const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
   const daysInViewMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
   const calendarDays = [];
@@ -150,8 +164,8 @@ export const QuotePage = () => {
     calendarDays.push({
       isPlaceholder: false,
       key: iso,
+      iso,
       dayNum: d,
-      isoDate: iso,
       isPast,
       isToday,
       isSelected,
@@ -159,196 +173,54 @@ export const QuotePage = () => {
     });
   }
 
-  const formatHumanDate = (iso) => {
-    if (!iso) return "";
-    const parts = iso.split("-").map(Number);
-    if (parts.length !== 3) return iso;
-    const d = new Date(parts[0], parts[1] - 1, parts[2]);
-    return d.toLocaleDateString("es-MX", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-  };
-
-  const getAvailabilityMeta = (status) => {
-    switch (status) {
-      case "disponible":
-        return {
-          label: "Disponible",
-          badgeClass: "status-badge-disponible",
-          dotColor: "#10B981",
-          bannerBg: "rgba(16, 185, 129, 0.08)",
-          bannerBorder: "#10B981",
-          bannerColor: "#065F46",
-          message: "Esta fecha aparece disponible en la demostración para celebrar tu evento.",
-          isAvailable: true
-        };
-      case "limitada":
-        return {
-          label: "Limitada",
-          badgeClass: "status-badge-limitada",
-          dotColor: "#F59E0B",
-          bannerBg: "rgba(245, 158, 11, 0.08)",
-          bannerBorder: "#F59E0B",
-          bannerColor: "#92400E",
-          message: "Existe una solicitud en revisión para esta fecha. Puedes registrar tu cotización preferencial.",
-          isAvailable: true
-        };
-      case "proceso":
-        return {
-          label: "En proceso",
-          badgeClass: "status-badge-proceso",
-          dotColor: "#A86C60",
-          bannerBg: "rgba(168, 108, 96, 0.08)",
-          bannerBorder: "#A86C60",
-          bannerColor: "#78350F",
-          message: "Fecha en proceso de cotización previa. Puedes solicitar información o integrarte a lista prioritaria.",
-          isAvailable: true
-        };
-      case "apartada":
-      default:
-        return {
-          label: "Apartada",
-          badgeClass: "status-badge-apartada",
-          dotColor: "#6B7280",
-          bannerBg: "rgba(107, 114, 128, 0.08)",
-          bannerBorder: "#6B7280",
-          bannerColor: "#374151",
-          message: "Esta fecha se encuentra apartada con anticipo demostrativo. Por favor elige otra fecha libre.",
-          isAvailable: false
-        };
-    }
-  };
-
-  // Definición del Stepper (7 pasos)
-  const stepsList = [
-    { num: "01", name: "Fecha" },
-    { num: "02", name: "Evento" },
-    { num: "03", name: "Invitados" },
-    { num: "04", name: "Opción" },
-    { num: "05", name: "Extras" },
-    { num: "06", name: "Datos" },
-    { num: "07", name: "Resumen" }
-  ];
-
-  // Handlers
-  const handleDateChange = (dateVal) => {
-    setQuoteState(prev => ({ ...prev, date: dateVal }));
-    setErrorMsg("");
-    if (dateVal) {
-      const parts = dateVal.split("-").map(Number);
-      if (parts.length === 3 && !isNaN(parts[0])) {
-        setCalendarViewDate(new Date(parts[0], parts[1] - 1, 1));
-      }
-      trackEvent("quote_date_selected", {
-        step: 1,
-        is_future: dateVal >= todayISO,
-        status: getDateStatus(dateVal)
-      });
-    }
-  };
-
-
-  const handleEventTypeSelect = (typeId) => {
-    setQuoteState(prev => ({ ...prev, eventType: typeId }));
-    setErrorMsg("");
-    trackEvent("quote_event_type_selected", {
-      event_type: typeId,
-      step: 2
-    });
-  };
-
-  const handleGuestsRange = (count) => {
-    setQuoteState(prev => ({ ...prev, guests: count }));
-  };
-
-  const handleGuestsInput = (val) => {
-    const num = Math.max(10, Math.min(1000, Number(val) || 10));
-    setQuoteState(prev => ({ ...prev, guests: num }));
-  };
-
-  const handlePackageSelect = (pkgId) => {
-    setQuoteState(prev => ({ ...prev, packageId: pkgId }));
-    setErrorMsg("");
-    trackEvent("quote_package_selected", {
-      package_id: pkgId,
-      step: 4
-    });
-  };
-
-  const handleExtraToggle = (extraId) => {
-    setQuoteState(prev => {
-      const exists = prev.selectedExtras.includes(extraId);
-      const updated = exists 
-        ? prev.selectedExtras.filter(id => id !== extraId)
-        : [...prev.selectedExtras, extraId];
-
-      trackEvent("quote_extras_selected", {
-        extras_count: updated.length,
-        step: 5
-      });
-
-      return { ...prev, selectedExtras: updated };
-    });
-  };
-
-  const handleNextStep = () => {
+  // Manejo de pasos y validación
+  const goToNextStep = () => {
     setErrorMsg("");
 
-    // Validación Paso 1 (Fecha)
-    if (currentStep === 1) {
-      if (!quoteState.date) {
-        setErrorMsg("Por favor selecciona una fecha tentativa para tu evento.");
-        return;
-      }
-      if (quoteState.date < todayISO) {
-        setErrorMsg("Por favor selecciona una fecha futura válida.");
-        return;
-      }
-      if (selectedDateStatus === "apartada") {
-        setErrorMsg("La fecha seleccionada se encuentra apartada en la demostración. Por favor elige otra fecha disponible o limitada.");
-        return;
-      }
+    // Validaciones específicas
+    if (currentStep === 1 && !quoteState.eventType) {
+      setErrorMsg("Por favor selecciona el tipo de evento que deseas organizar.");
+      return;
     }
 
-    // Validación Paso 2 (Evento)
     if (currentStep === 2) {
-      if (!quoteState.eventType) {
-        setErrorMsg("Por favor selecciona el tipo de evento que deseas celebrar.");
+      const g = Number(quoteState.guests);
+      if (!g || g < 1) {
+        setErrorMsg("Por favor indica una cantidad válida de asistentes esperados.");
         return;
       }
+      trackEvent("guest_range_selected", {
+        guests_count: g,
+        guest_range: getGuestRange(g)
+      });
     }
 
-    // Validación Paso 3 (Invitados)
-    if (currentStep === 3) {
-      if (!quoteState.guests || quoteState.guests < 10) {
-        setErrorMsg("Por favor ingresa un número de invitados válido (mínimo 10).");
-        return;
-      }
+    if (currentStep === 3 && !quoteState.spaceId) {
+      setErrorMsg("Por favor selecciona un espacio para tu evento.");
+      return;
     }
 
-    // Validación Paso 4 (Opción)
-    if (currentStep === 4) {
-      if (!quoteState.packageId) {
-        setErrorMsg("Por favor selecciona una opción o paquete base.");
-        return;
-      }
+    if (currentStep === 4 && !quoteState.layoutId) {
+      setErrorMsg("Por favor selecciona un formato de montaje.");
+      return;
     }
 
-    // Validación Paso 6 (Datos)
-    if (currentStep === 6) {
+    if (currentStep === 6 && !quoteState.date) {
+      setErrorMsg("Por favor selecciona una fecha en el calendario interactivo.");
+      return;
+    }
+
+    if (currentStep === 7) {
       if (!quoteState.clientName.trim()) {
         setErrorMsg("Por favor ingresa tu nombre completo.");
         return;
       }
-      if (!quoteState.clientPhone.trim()) {
-        setErrorMsg("Por favor ingresa un teléfono o WhatsApp de contacto.");
+      if (!quoteState.clientPhone.trim() || quoteState.clientPhone.length < 8) {
+        setErrorMsg("Por favor proporciona un número de teléfono o WhatsApp válido de 10 dígitos.");
         return;
       }
       if (!quoteState.clientEmail.trim() || !quoteState.clientEmail.includes("@")) {
-        setErrorMsg("Por favor ingresa un correo electrónico válido.");
+        setErrorMsg("Por favor ingresa un correo electrónico válido para enviarte el folio.");
         return;
       }
       if (!quoteState.privacyAccepted) {
@@ -357,435 +229,228 @@ export const QuotePage = () => {
       }
     }
 
-    if (currentStep < 7) {
-      setCurrentStep(prev => prev + 1);
-      window.scrollTo({ top: 120, behavior: "smooth" });
+    // Scroll to top of wizard
+    const topElem = document.getElementById("quote-wizard-top");
+    if (topElem) {
+      topElem.scrollIntoView({ behavior: "smooth" });
     }
+
+    setCurrentStep(prev => Math.min(8, prev + 1));
   };
 
-  const handlePrevStep = () => {
+  const goToPrevStep = () => {
     setErrorMsg("");
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-      window.scrollTo({ top: 120, behavior: "smooth" });
+    const topElem = document.getElementById("quote-wizard-top");
+    if (topElem) {
+      topElem.scrollIntoView({ behavior: "smooth" });
     }
+    setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
-  const handleSubmitRequest = (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    setErrorMsg("");
+  const handleEventTypeSelect = (typeId) => {
+    setQuoteState(prev => ({ ...prev, eventType: typeId }));
+    trackEvent("quote_event_type_selected", {
+      event_type: typeId
+    });
+  };
 
-    const newRequest = createRequest({
+  const handleGuestRangeClick = (range) => {
+    setQuoteState(prev => ({
+      ...prev,
+      guestRangeId: range.id,
+      guests: range.defaultNum
+    }));
+  };
+
+  const handleSpaceSelect = (spaceId) => {
+    setQuoteState(prev => ({ ...prev, spaceId }));
+    trackEvent("venue_selected", {
+      space_id: spaceId
+    });
+  };
+
+  const handleLayoutSelect = (layoutId) => {
+    setQuoteState(prev => ({ ...prev, layoutId }));
+    trackEvent("event_layout_selected", {
+      layout_id: layoutId
+    });
+  };
+
+  const handleToggleExtra = (extraId) => {
+    setQuoteState(prev => {
+      const exists = prev.selectedExtras.includes(extraId);
+      const updated = exists 
+        ? prev.selectedExtras.filter(id => id !== extraId)
+        : [...prev.selectedExtras, extraId];
+      return { ...prev, selectedExtras: updated };
+    });
+  };
+
+  const handleDateSelect = (dayObj) => {
+    if (dayObj.isPast) return;
+    setQuoteState(prev => ({ ...prev, date: dayObj.iso }));
+    trackEvent("quote_date_selected", {
+      status: dayObj.status,
+      date: dayObj.iso
+    });
+  };
+
+  // Envío final de Solicitud (Paso 8)
+  const handleSubmitQuote = (e) => {
+    e.preventDefault();
+
+    const createdReq = createRequest({
       clientName: quoteState.clientName,
       clientPhone: quoteState.clientPhone,
       clientEmail: quoteState.clientEmail,
-      cityZone: quoteState.cityZone,
-      eventType: eventTypeName,
+      company: quoteState.company,
+      eventType: selectedTypeObj.name,
       guests: quoteState.guests,
-      packageId: quoteState.packageId,
-      packageName: selectedPackage.name,
+      spaceId: selectedSpace.id,
+      spaceName: selectedSpace.name,
+      layout: selectedLayout.name,
       packageBasePrice: basePrice,
       extras: quoteState.selectedExtras,
       extrasTotal,
       estimatedTotal,
       suggestedDeposit,
       date: quoteState.date,
-      comments: quoteState.comments
+      comments: quoteState.comments,
+      status: "En revisión"
     });
 
-    // Tracking estricto sin PII
     trackEvent("quote_completed", {
-      event_type: quoteState.eventType,
-      package_id: quoteState.packageId,
-      guest_range: getGuestRange(quoteState.guests),
+      event_type: selectedTypeObj.name,
+      space_id: selectedSpace.id,
+      layout_id: selectedLayout.id,
+      guests_count: quoteState.guests,
       extras_count: quoteState.selectedExtras.length,
       estimated_total_range: getEstimatedTotalRange(estimatedTotal)
     });
 
-    navigate("/confirmacion", { state: { request: newRequest } });
+    // Navegar a confirmación
+    navigate("/confirmacion", { state: { request: createdReq } });
   };
 
-  // Render rápido del status de la fecha
-  const renderDateStatusFeedback = () => {
-    if (!quoteState.date) return null;
-
-    if (selectedDateStatus === "disponible") {
-      return (
-        <div className="date-availability-status-box" style={{ borderColor: "#10B981", backgroundColor: "rgba(16, 185, 129, 0.08)", marginTop: "1rem" }}>
-          <div style={{ color: "#059669", display: "flex", alignItems: "center" }}>
-            <CheckIcon size={18} />
-          </div>
-          <span style={{ fontSize: "0.85rem", color: "#065F46", fontWeight: 500 }}>
-            Esta fecha aparece <strong>disponible</strong> en la demostración.
-          </span>
-        </div>
-      );
-    }
-    if (selectedDateStatus === "limitada") {
-      return (
-        <div className="date-availability-status-box" style={{ borderColor: "#F59E0B", backgroundColor: "rgba(245, 158, 11, 0.08)", marginTop: "1rem" }}>
-          <div style={{ color: "#D97706", display: "flex", alignItems: "center" }}>
-            <AlertCircleIcon size={18} />
-          </div>
-          <span style={{ fontSize: "0.85rem", color: "#92400E", fontWeight: 500 }}>
-            Existe una solicitud en proceso para esta fecha. Disponibilidad sujeta a confirmación.
-          </span>
-        </div>
-      );
-    }
-    if (selectedDateStatus === "proceso") {
-      return (
-        <div className="date-availability-status-box" style={{ borderColor: "#A86C60", backgroundColor: "rgba(168, 108, 96, 0.08)", marginTop: "1rem" }}>
-          <div style={{ color: "#A86C60", display: "flex", alignItems: "center" }}>
-            <AlertCircleIcon size={18} />
-          </div>
-          <span style={{ fontSize: "0.85rem", color: "#78350F", fontWeight: 500 }}>
-            Fecha en proceso de cotización previa. Puedes solicitar información alternativa.
-          </span>
-        </div>
-      );
-    }
-    if (selectedDateStatus === "apartada") {
-      return (
-        <div className="date-availability-status-box" style={{ borderColor: "#6B7280", backgroundColor: "rgba(107, 114, 128, 0.08)", marginTop: "1rem" }}>
-          <div style={{ color: "#4B5563", display: "flex", alignItems: "center" }}>
-            <AlertCircleIcon size={18} />
-          </div>
-          <span style={{ fontSize: "0.85rem", color: "#374151", fontWeight: 500 }}>
-            Esta fecha se encuentra apartada en la demostración. Por favor elige otro día.
-          </span>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const renderEventIcon = (typeId) => {
-    switch (typeId) {
-      case "boda":
-      case "aniversario":
-        return <HeartIcon size={22} />;
-      case "xv-anos":
-        return <SparklesIcon size={22} />;
-      case "cumpleanos":
-        return <GiftIcon size={22} />;
-      case "graduacion":
-        return <AcademicIcon size={22} />;
-      case "corporativo":
-        return <BriefcaseIcon size={22} />;
-      case "evento-privado":
-        return <StarIcon size={22} />;
-      default:
-        return <CalendarIcon size={22} />;
-    }
-  };
+  // Nombres de los 8 pasos oficiales
+  const STEP_TITLES = [
+    "01 Evento",
+    "02 Asistentes",
+    "03 Espacio",
+    "04 Montaje",
+    "05 Servicios",
+    "06 Fecha",
+    "07 Datos",
+    "08 Resumen"
+  ];
 
   return (
-    <div className="quote-page-wrap">
+    <div className="quote-page-wrap" id="quote-wizard-top">
       <div className="container">
-        {/* Header */}
+        {/* Header Cotizador */}
         <div className="quote-header-box">
-          <span className="quote-demo-badge">COTIZADOR INTERACTIVO DEMO</span>
-          <h1 className="quote-title">Diseña tu celebración en La Antigua</h1>
+          <span className="quote-demo-badge">COTIZACIÓN DEMOSTRATIVA</span>
+          <h1 className="quote-title">Planea tu evento en La Cantera</h1>
           <p className="quote-subtext">
-            Consulta disponibilidad, personaliza invitados, opciones y extras para recibir una cotización demostrativa inmediata.
+            Explora salones de gran formato, selecciona el montaje a tu medida y obtén una proyección estimada en tiempo real.
           </p>
         </div>
 
-        {/* Stepper Oficial de 7 Pasos con barra de progreso */}
-        <nav className="stepper-nav" aria-label="Progreso del cotizador">
+        {/* Stepper Oficial de 8 Pasos */}
+        <nav className="stepper-nav" aria-label="Progreso de cotización">
           <div className="stepper-progress-line">
             <div 
               className="stepper-progress-fill" 
-              style={{ width: `${((currentStep - 1) / (stepsList.length - 1)) * 100}%` }}
+              style={{ width: `${((currentStep - 1) / 7) * 100}%` }}
             />
           </div>
-          {stepsList.map((st, idx) => {
+
+          {STEP_TITLES.map((stepName, idx) => {
             const stepNumber = idx + 1;
             const isPassed = currentStep > stepNumber;
             const isCurrent = currentStep === stepNumber;
 
             return (
               <button 
-                key={st.num} 
                 type="button"
+                key={stepNumber}
                 className={`stepper-step-item ${isCurrent ? "active" : ""} ${isPassed ? "completed" : ""}`}
                 onClick={() => {
-                  if (stepNumber < currentStep) setCurrentStep(stepNumber);
+                  if (isPassed) setCurrentStep(stepNumber);
                 }}
-                aria-label={`Ir al paso ${st.num} ${st.name}`}
+                disabled={!isPassed && !isCurrent}
+                aria-current={isCurrent ? "step" : undefined}
+                aria-label={`Paso ${stepNumber}: ${stepName}`}
               >
                 <div className="stepper-circle">
-                  {isPassed ? <CheckIcon size={14} /> : st.num}
+                  {isPassed ? <CheckIcon size={14} /> : stepNumber}
                 </div>
-                <span className="stepper-label">{st.name}</span>
+                <span className="stepper-label">
+                  {stepName}
+                </span>
               </button>
             );
           })}
         </nav>
 
-        {/* Indicador visible en móvil del paso actual */}
+        {/* Indicador visible en pantallas pequeñas y teléfonos */}
         <div className="stepper-mobile-current">
-          <span>Paso {stepsList[currentStep - 1].num} de 07:</span> <strong>{stepsList[currentStep - 1].name}</strong>
+          <span className="eyebrow" style={{ color: "var(--color-gold)", marginBottom: "0.2rem", fontSize: "0.72rem" }}>
+            PASO 0{currentStep} / 08
+          </span>
+          <div style={{ fontWeight: 700, fontSize: "1.08rem", color: "var(--color-charcoal-deep)" }}>
+            {STEP_TITLES[currentStep - 1]?.replace(/^\d+\s*/, "")}
+          </div>
         </div>
 
-        {/* Layout Grid: Pasos (Izquierda) + Desglose Dinámico (Derecha) */}
+        {/* Mensaje de Error / Alerta */}
+        {errorMsg && (
+          <div className="alert-banner alert-warning animate-fade-in" style={{ maxWidth: "860px", margin: "0 auto 1.5rem" }}>
+            <div className="alert-content-left">
+              <AlertCircleIcon size={18} />
+              <span>{errorMsg}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Layout Grid: Stepper Form + Summary Sticky Bar */}
         <div className="quote-layout-grid">
-
-          {/* Columna Izquierda: Tarjeta del Paso Activo */}
-          <main className="quote-step-card animate-fade-in">
-            {errorMsg && (
-              <div className="alert-banner alert-warning animate-fade-in" style={{ marginBottom: "1.5rem" }}>
-                <div className="alert-content-left">
-                  <AlertCircleIcon size={18} />
-                  <span>{errorMsg}</span>
-                </div>
-              </div>
-            )}
-
+          {/* Main Form Area */}
+          <div className="quote-step-card">
             {/* ==================================================
-                PASO 1: FECHA
+                PASO 1: EVENTO
                 ================================================== */}
             {currentStep === 1 && (
               <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 01</span>
-                <h2 className="quote-step-title">¿Cuándo quieres celebrar?</h2>
-                <p className="quote-step-desc">
-                  Selecciona la fecha tentativa para tu evento en nuestro calendario interactivo. Puedes consultar la disponibilidad demostrativa en tiempo real.
-                </p>
-
-                <div className="date-picker-wrap">
-                  {/* Tarjeta del Calendario Interactivo */}
-                  <div className="quote-calendar-card">
-                    {/* Barra Superior con Mes y Navegación */}
-                    <div className="quote-calendar-header">
-                      <div className="quote-calendar-month-title">
-                        <CalendarIcon size={20} style={{ color: "var(--color-terracotta)" }} />
-                        <span>{monthLabel}</span>
-                      </div>
-                      <div className="quote-calendar-nav">
-                        <button 
-                          type="button" 
-                          className="quote-calendar-btn"
-                          onClick={handlePrevMonth}
-                          disabled={isCurrentMonthView}
-                          title={isCurrentMonthView ? "Mes actual" : "Mes anterior"}
-                          aria-label="Mes anterior"
-                        >
-                          <ChevronLeftIcon size={16} />
-                          <span>Anterior</span>
-                        </button>
-                        {!isCurrentMonthView && (
-                          <button 
-                            type="button" 
-                            className="quote-calendar-btn"
-                            onClick={handleGoToCurrentMonth}
-                            title="Volver al mes actual"
-                          >
-                            <span>Hoy</span>
-                          </button>
-                        )}
-                        <button 
-                          type="button" 
-                          className="quote-calendar-btn"
-                          onClick={handleNextMonth}
-                          aria-label="Mes siguiente"
-                        >
-                          <span>Siguiente</span>
-                          <ChevronRightIcon size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Leyenda de Disponibilidad */}
-                    <div className="quote-calendar-legend">
-                      <span className="quote-calendar-legend-item">
-                        <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#10B981" }} />
-                        Disponible
-                      </span>
-                      <span className="quote-calendar-legend-item">
-                        <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#F59E0B" }} />
-                        Disponibilidad limitada
-                      </span>
-                      <span className="quote-calendar-legend-item">
-                        <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#A86C60" }} />
-                        En proceso
-                      </span>
-                      <span className="quote-calendar-legend-item">
-                        <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#6B7280" }} />
-                        Apartada
-                      </span>
-                    </div>
-
-                    {/* Grid de Días de la Semana y Celdas */}
-                    <div className="quote-calendar-grid">
-                      {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((dow, idx) => (
-                        <div key={idx} className="quote-calendar-dow">
-                          {dow}
-                        </div>
-                      ))}
-
-                      {calendarDays.map((cell) => {
-                        if (cell.isPlaceholder) {
-                          return <div key={cell.key} className="quote-calendar-cell placeholder" />;
-                        }
-
-                        const meta = getAvailabilityMeta(cell.status);
-                        const isSelectable = !cell.isPast;
-
-                        return (
-                          <div 
-                            key={cell.key}
-                            className={`quote-calendar-cell ${cell.isPast ? "past" : ""} ${cell.isSelected ? "selected" : ""}`}
-                            onClick={() => {
-                              if (isSelectable) {
-                                handleDateChange(cell.isoDate);
-                              }
-                            }}
-                            title={
-                              cell.isPast 
-                                ? "Fecha no disponible (pasada)" 
-                                : `${cell.dayNum} de ${monthLabel}: ${meta.label}`
-                            }
-                            role="button"
-                            tabIndex={isSelectable ? 0 : -1}
-                            onKeyDown={(e) => {
-                              if ((e.key === "Enter" || e.key === " ") && isSelectable) {
-                                handleDateChange(cell.isoDate);
-                              }
-                            }}
-                          >
-                            <span className="quote-calendar-cell-num">
-                              {cell.dayNum}
-                            </span>
-
-                            {!cell.isPast && (
-                              <>
-                                <span className={`quote-calendar-cell-badge ${meta.badgeClass}`}>
-                                  {meta.label}
-                                </span>
-                                <span 
-                                  className="quote-calendar-cell-dot" 
-                                  style={{ backgroundColor: meta.dotColor }}
-                                />
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Callout de Confirmación de Fecha Seleccionada */}
-                  {quoteState.date ? (() => {
-                    const meta = getAvailabilityMeta(selectedDateStatus);
-                    return (
-                      <div 
-                        className="quote-selected-date-card animate-fade-in" 
-                        style={{ 
-                          borderLeft: `4px solid ${meta.bannerBorder}`,
-                          backgroundColor: meta.bannerBg 
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: "0.85rem" }}>
-                          <div style={{ color: meta.bannerColor, marginTop: "0.2rem" }}>
-                            {selectedDateStatus === "apartada" ? <AlertCircleIcon size={22} /> : <CheckIcon size={22} />}
-                          </div>
-                          <div>
-                            <span style={{ fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: meta.bannerColor, display: "block" }}>
-                              Fecha seleccionada para tu evento:
-                            </span>
-                            <strong style={{ fontSize: "1.08rem", color: "var(--color-charcoal-deep)", display: "block", textTransform: "capitalize", margin: "0.2rem 0" }}>
-                              {formatHumanDate(quoteState.date)}
-                            </strong>
-                            <p style={{ fontSize: "0.86rem", color: meta.bannerColor, margin: 0, lineHeight: 1.4 }}>
-                              {meta.message}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div style={{ flexShrink: 0, textAlign: "right" }}>
-                          <span 
-                            style={{ 
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.4rem",
-                              fontSize: "0.8rem", 
-                              fontWeight: 700, 
-                              padding: "0.35rem 0.8rem", 
-                              borderRadius: "var(--radius-full)",
-                              backgroundColor: meta.bannerBg,
-                              border: `1px solid ${meta.bannerBorder}`,
-                              color: meta.bannerColor 
-                            }}
-                          >
-                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: meta.dotColor }} />
-                            {meta.label}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })() : (
-                    <div style={{ 
-                      padding: "1.1rem 1.25rem", 
-                      backgroundColor: "var(--color-surface)", 
-                      borderRadius: "var(--radius-md)", 
-                      border: "1px dashed var(--border-light)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                      color: "var(--color-text-secondary)",
-                      fontSize: "0.9rem"
-                    }}>
-                      <CalendarIcon size={20} style={{ color: "var(--color-accent)" }} />
-                      <span>Haz clic sobre cualquier fecha en verde o amarillo para seleccionarla y avanzar.</span>
-                    </div>
-                  )}
-
-                  {/* Opción rápida manual de fecha */}
-                  <div className="quote-manual-date-toggle">
-                    <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>
-                      O si prefieres, escribe o selecciona la fecha en formato manual:
-                    </span>
-                    <input 
-                      type="date"
-                      id="quote-date-input"
-                      className="form-input"
-                      style={{ maxWidth: "220px", padding: "0.55rem 0.85rem", fontSize: "0.88rem" }}
-                      min={todayISO}
-                      value={quoteState.date}
-                      onChange={(e) => handleDateChange(e.target.value)}
-                    />
-                  </div>
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 01 / 08</span>
+                  <h2 className="quote-step-title">¿Qué tipo de evento estás organizando?</h2>
+                  <p className="quote-step-desc">
+                    Selecciona una categoría social o corporativa para adaptar las opciones y capacidades recomendadas.
+                  </p>
                 </div>
-              </div>
-            )}
 
-            {/* ==================================================
-                PASO 2: EVENTO
-                ================================================== */}
-            {currentStep === 2 && (
-              <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 02</span>
-                <h2 className="quote-step-title">¿Qué estás celebrando?</h2>
-                <p className="quote-step-desc">
-                  Selecciona el formato de tu celebración para adaptar la sugerencia de montaje y logística.
-                </p>
-
-                <div className="event-selection-grid">
+                <div className="type-picker-grid">
                   {eventTypesList.map((type) => {
                     const isSelected = quoteState.eventType === type.id;
                     return (
-                      <div 
+                      <div
                         key={type.id}
-                        className={`event-select-card ${isSelected ? "selected" : ""}`}
+                        className={`type-picker-card ${isSelected ? "selected" : ""}`}
                         onClick={() => handleEventTypeSelect(type.id)}
                       >
-                        <div className="event-select-icon">
-                          {renderEventIcon(type.id)}
+                        <div className="type-picker-card-header">
+                          <span className="type-picker-cat">
+                            {type.category === "corporativo" ? "Corporativo" : "Social"}
+                          </span>
+                          {isSelected && <CheckIcon size={16} style={{ color: "var(--color-gold)" }} />}
                         </div>
-                        <span className="event-select-name">{type.name}</span>
-                        <span className="event-select-desc">{type.subtitle}</span>
+                        <h4 className="type-picker-title">
+                          {type.name}
+                        </h4>
+                        <p className="type-picker-subtitle">
+                          {type.subtitle}
+                        </p>
                       </div>
                     );
                   })}
@@ -794,124 +459,143 @@ export const QuotePage = () => {
             )}
 
             {/* ==================================================
-                PASO 3: INVITADOS
+                PASO 2: ASISTENTES
                 ================================================== */}
-            {currentStep === 3 && (
+            {currentStep === 2 && (
               <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 03</span>
-                <h2 className="quote-step-title">¿Cuántas personas esperas?</h2>
-                <p className="quote-step-desc">
-                  Calcula tu presupuesto estimado según el número de invitados previstos.
-                </p>
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 02 / 08</span>
+                  <h2 className="quote-step-title">¿Cuántas personas esperas?</h2>
+                  <p className="quote-step-desc">
+                    Elige un rango sugerido o escribe el número exacto estimado para tu celebración o convención.
+                  </p>
+                </div>
 
-                <div className="guests-control-box">
-                  <div className="guests-ranges-row">
-                    {[
-                      { label: "1–50", val: 50 },
-                      { label: "51–100", val: 100 },
-                      { label: "101–150", val: 150 },
-                      { label: "151–200", val: 200 },
-                      { label: "200+", val: 250 }
-                    ].map((rng) => {
-                      const isSelected = (
-                        (rng.label === "1–50" && quoteState.guests <= 50) ||
-                        (rng.label === "51–100" && quoteState.guests > 50 && quoteState.guests <= 100) ||
-                        (rng.label === "101–150" && quoteState.guests > 100 && quoteState.guests <= 150) ||
-                        (rng.label === "151–200" && quoteState.guests > 150 && quoteState.guests <= 200) ||
-                        (rng.label === "200+" && quoteState.guests > 200)
-                      );
+                <div style={{ margin: "2rem 0" }}>
+                  <label className="form-label" style={{ marginBottom: "0.75rem", display: "block" }}>
+                    Rangos de capacidad frecuentes:
+                  </label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.75rem", marginBottom: "2rem" }}>
+                    {guestRangesList.map((range) => {
+                      const isSelected = quoteState.guestRangeId === range.id;
                       return (
-                        <button 
-                          key={rng.label}
+                        <button
+                          key={range.id}
                           type="button"
-                          className={`guest-range-btn ${isSelected ? "selected" : ""}`}
-                          onClick={() => handleGuestsRange(rng.val)}
+                          className={`btn ${isSelected ? "btn-primary" : "btn-outline"}`}
+                          onClick={() => handleGuestRangeClick(range)}
+                          style={{
+                            padding: "0.85rem 0.5rem",
+                            borderRadius: "var(--radius-sm)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "0.25rem"
+                          }}
                         >
-                          {rng.label}
+                          <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>{range.label}</span>
+                          <span style={{ fontSize: "0.72rem", opacity: 0.9 }}>{range.badge}</span>
                         </button>
                       );
                     })}
                   </div>
 
-                  <div className="guest-number-dial">
-                    <button 
-                      type="button" 
-                      className="dial-btn"
-                      onClick={() => handleGuestsInput(Math.max(10, quoteState.guests - 10))}
-                      aria-label="Disminuir 10 personas"
-                    >
-                      -
-                    </button>
-                    <input 
-                      type="number"
-                      className="dial-input-val"
-                      value={quoteState.guests}
-                      onChange={(e) => handleGuestsInput(e.target.value)}
-                      min={10}
-                      max={1000}
-                    />
-                    <button 
-                      type="button" 
-                      className="dial-btn"
-                      onClick={() => handleGuestsInput(quoteState.guests + 10)}
-                      aria-label="Aumentar 10 personas"
-                    >
-                      +
-                    </button>
-                  </div>
+                  {/* Número Personalizado */}
+                  <div style={{ padding: "1.5rem", backgroundColor: "var(--color-bg)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-light)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <label htmlFor="custom-guests-input" className="form-label" style={{ margin: 0, fontWeight: 700 }}>
+                        Número personalizado de asistentes:
+                      </label>
+                      <span style={{ fontSize: "0.82rem", color: "var(--color-stone)", fontWeight: 600 }}>
+                        Recinto apto para gran formato
+                      </span>
+                    </div>
 
-                  <span style={{ fontSize: "0.88rem", color: "var(--color-text-secondary)", display: "block" }}>
-                    Personas / Invitados estimados
-                  </span>
-                  <p style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", marginTop: "0.85rem", fontStyle: "italic" }}>
-                    * Capacidades mostradas con fines demostrativos. Se adaptan a los requerimientos específicos de tu evento.
-                  </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                      <input
+                        type="number"
+                        id="custom-guests-input"
+                        className="form-input ph-mask"
+                        min="10"
+                        max="2000"
+                        step="10"
+                        value={quoteState.guests}
+                        onChange={(e) => setQuoteState({ ...quoteState, guests: Math.max(1, Number(e.target.value)), guestRangeId: "custom" })}
+                        style={{ fontSize: "1.4rem", fontWeight: 700, maxWidth: "180px", textAlign: "center" }}
+                      />
+                      <span style={{ fontSize: "1rem", color: "var(--color-text-secondary)", fontWeight: 500 }}>
+                        invitados proyectados
+                      </span>
+                    </div>
+
+                    {quoteState.guests > 500 && (
+                      <div style={{ marginTop: "0.85rem", fontSize: "0.82rem", color: "#92400E", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        <SparklesIcon size={14} />
+                        <span>Excelente: El Salón Principal de La Cantera cuenta con la escala ideal para este número de comensales.</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
 
             {/* ==================================================
-                PASO 4: OPCIÓN / PAQUETE
+                PASO 3: ESPACIO
                 ================================================== */}
-            {currentStep === 4 && (
+            {currentStep === 3 && (
               <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 04</span>
-                <h2 className="quote-step-title">¿Cómo imaginas tu evento?</h2>
-                <p className="quote-step-desc">
-                  Selecciona la opción de espacio o paquete demostrativo que mejor represente tu visión.
-                </p>
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 03 / 08</span>
+                  <h2 className="quote-step-title">Selecciona un espacio</h2>
+                  <p className="quote-step-desc">
+                    Elige la configuración de recinto que mejor se adapta a tu evento. Capacidad y montaje sujetos a confirmación por el negocio.
+                  </p>
+                </div>
 
-                <div className="package-selection-cards">
-                  {packages.map((pkg) => {
-                    const isSelected = quoteState.packageId === pkg.id;
+                <div className="space-selection-grid">
+                  {availableSpaces.map((space) => {
+                    const isSelected = quoteState.spaceId === space.id;
                     return (
-                      <div 
-                        key={pkg.id}
-                        className={`pkg-select-item ${isSelected ? "selected" : ""}`}
-                        onClick={() => handlePackageSelect(pkg.id)}
+                      <div
+                        key={space.id}
+                        className={`space-card-item ${isSelected ? "selected" : ""}`}
+                        onClick={() => handleSpaceSelect(space.id)}
                       >
-                        <div className="pkg-radio-circle">
-                          {isSelected && <div className="pkg-radio-dot" />}
-                        </div>
-
-                        <div className="pkg-select-info">
-                          <h4>{pkg.name}</h4>
-                          <p>{pkg.description}</p>
-                          {pkg.includes && (
-                            <ul style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", marginTop: "0.6rem", listStyle: "none", padding: 0 }}>
-                              {pkg.includes.slice(0, 3).map((inc, i) => (
-                                <li key={i} style={{ fontSize: "0.76rem", color: "var(--color-text-secondary)", backgroundColor: "var(--color-bg)", padding: "0.2rem 0.55rem", borderRadius: "var(--radius-xs)" }}>
-                                  ✓ {inc}
-                                </li>
-                              ))}
-                            </ul>
+                        <div className="space-card-img-wrap">
+                          <img 
+                            src={space.image} 
+                            alt={space.name} 
+                            loading="lazy"
+                          />
+                          <span className="space-card-badge">
+                            {space.badge}
+                          </span>
+                          {isSelected && (
+                            <span className="space-card-check">
+                              <CheckIcon size={14} />
+                            </span>
                           )}
                         </div>
 
-                        <div className="pkg-select-price">
-                          <span style={{ fontSize: "0.72rem", textTransform: "uppercase", color: "var(--color-text-muted)", display: "block" }}>Precio DEMO</span>
-                          <span className="pkg-price-num">${pkg.priceNumber?.toLocaleString("es-MX")}</span>
-                          <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", display: "block" }}>MXN</span>
+                        <div className="space-card-body">
+                          <div>
+                            <h3 className="space-card-title">
+                              {space.name}
+                            </h3>
+                            <div className="space-card-layout">
+                              {space.layoutType}
+                            </div>
+                            <div className="space-card-price">
+                              {space.priceFrom}
+                            </div>
+                            <p className="space-card-desc">
+                              {space.description}
+                            </p>
+                          </div>
+
+                          <div className="space-card-note">
+                            * Capacidad y montaje sujetos a confirmación por el negocio.
+                          </div>
                         </div>
                       </div>
                     );
@@ -921,31 +605,75 @@ export const QuotePage = () => {
             )}
 
             {/* ==================================================
-                PASO 5: EXTRAS
+                PASO 4: MONTAJE
+                ================================================== */}
+            {currentStep === 4 && (
+              <div className="animate-fade-in">
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 04 / 08</span>
+                  <h2 className="quote-step-title">¿Cómo quieres montar tu evento?</h2>
+                  <p className="quote-step-desc">
+                    Elige el estilo de distribución para tus invitados o asistentes dentro de las instalaciones.
+                  </p>
+                </div>
+
+                <div className="layout-selection-grid">
+                  {layoutOptionsList.map((layout) => {
+                    const isSelected = quoteState.layoutId === layout.id;
+                    return (
+                      <div
+                        key={layout.id}
+                        className={`layout-card-item ${isSelected ? "selected" : ""}`}
+                        onClick={() => handleLayoutSelect(layout.id)}
+                      >
+                        <div className="layout-card-icon">
+                          <UsersIcon size={22} />
+                        </div>
+
+                        <h4 className="layout-card-name">
+                          {layout.name}
+                        </h4>
+                        <span style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--color-stone)", fontWeight: 700 }}>
+                          {layout.recommendedGuests}
+                        </span>
+                        <p className="layout-card-desc">
+                          {layout.description}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ==================================================
+                PASO 5: SERVICIOS
                 ================================================== */}
             {currentStep === 5 && (
               <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 05</span>
-                <h2 className="quote-step-title">Agrega algunos detalles</h2>
-                <p className="quote-step-desc">
-                  Personaliza tu celebración con servicios adicionales y detalles demostrativos.
-                </p>
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 05 / 08</span>
+                  <h2 className="quote-step-title">Servicios adicionales</h2>
+                  <p className="quote-step-desc">
+                    Agrega los extras que requieras para complementar tu evento. Precios e inclusiones son demostrativos.
+                  </p>
+                </div>
 
                 <div className="extras-selection-grid">
                   {initialExtrasData.map((extra) => {
-                    const isSelected = quoteState.selectedExtras.includes(extra.id);
+                    const isChecked = quoteState.selectedExtras.includes(extra.id);
                     return (
-                      <div 
+                      <div
                         key={extra.id}
-                        className={`extra-select-card ${isSelected ? "active" : ""}`}
-                        onClick={() => handleExtraToggle(extra.id)}
+                        className={`extra-select-card ${isChecked ? "active" : ""}`}
+                        onClick={() => handleToggleExtra(extra.id)}
                       >
                         <div className="extra-info-left">
                           <span className="extra-name">{extra.name}</span>
                           <span className="extra-price-tag">+${extra.price.toLocaleString("es-MX")} MXN</span>
-                          <span style={{ fontSize: "0.74rem", color: "var(--color-text-muted)", marginTop: "0.2rem" }}>
+                          <p style={{ fontSize: "0.78rem", color: "var(--color-text-secondary)", margin: "0.25rem 0 0 0", lineHeight: 1.35 }}>
                             {extra.description}
-                          </span>
+                          </p>
                         </div>
                         <div className="extra-toggle-switch">
                           <div className="toggle-knob" />
@@ -958,243 +686,380 @@ export const QuotePage = () => {
             )}
 
             {/* ==================================================
-                PASO 6: DATOS DE CONTACTO
+                PASO 6: FECHA
                 ================================================== */}
             {currentStep === 6 && (
               <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 06</span>
-                <h2 className="quote-step-title">Tus datos de contacto</h2>
-                <p className="quote-step-desc">
-                  Comparte tus datos para enviarte la propuesta demostrativa y coordinar el seguimiento.
-                </p>
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 06 / 08</span>
+                  <h2 className="quote-step-title">Consulta tu fecha</h2>
+                  <p className="quote-step-desc">
+                    Selecciona en el calendario la fecha deseada para verificar su estado demostrativo.
+                  </p>
+                </div>
 
-                <div className="form-grid-2col">
+                <div className="quote-calendar-card">
+                  {/* Navegación y Título del Mes */}
+                  <div className="quote-calendar-header">
+                    <div className="quote-calendar-month-title">
+                      <CalendarIcon size={20} style={{ color: "var(--color-gold)" }} />
+                      <span>{monthLabel}</span>
+                    </div>
+
+                    <div className="quote-calendar-nav">
+                      <button 
+                        type="button" 
+                        className="quote-calendar-btn" 
+                        onClick={handlePrevMonth}
+                        disabled={isCurrentMonthView}
+                        aria-label="Mes anterior"
+                      >
+                        <ChevronLeftIcon size={16} />
+                      </button>
+
+                      <button 
+                        type="button" 
+                        className="quote-calendar-btn" 
+                        onClick={handleNextMonth}
+                        aria-label="Mes siguiente"
+                      >
+                        <ChevronRightIcon size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Leyenda Elegante */}
+                  <div className="quote-calendar-legend">
+                    <div className="quote-calendar-legend-item">
+                      <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#10B981" }} />
+                      <span>Disponible</span>
+                    </div>
+                    <div className="quote-calendar-legend-item">
+                      <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#F59E0B" }} />
+                      <span>En consulta</span>
+                    </div>
+                    <div className="quote-calendar-legend-item">
+                      <span className="quote-calendar-legend-dot" style={{ backgroundColor: "#B9A176" }} />
+                      <span>Apartada</span>
+                    </div>
+                  </div>
+
+                  {/* Cuadrícula de Días */}
+                  <div className="quote-calendar-grid">
+                    {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((d, i) => (
+                      <div key={i} className="quote-calendar-dow">
+                        {d}
+                      </div>
+                    ))}
+
+                    {calendarDays.map((day) => {
+                      if (day.isPlaceholder) {
+                        return <div key={day.key} className="quote-calendar-cell placeholder" />;
+                      }
+
+                      return (
+                        <div
+                          key={day.key}
+                          onClick={() => !day.isPast && handleDateSelect(day)}
+                          className={`quote-calendar-cell ${day.isPast ? "past" : `status-${day.status}`} ${day.isSelected ? "selected" : ""}`}
+                        >
+                          <span className="quote-calendar-cell-num">{day.dayNum}</span>
+                          {!day.isPast && (
+                            <span className={`quote-calendar-dot dot-${day.status}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {quoteState.date && (
+                  <div className="quote-selected-date-card animate-fade-in">
+                    <div>
+                      <span style={{ fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-stone)", fontWeight: 700 }}>
+                        Fecha seleccionada
+                      </span>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-primary)", textTransform: "capitalize", display: "flex", alignItems: "center", gap: "0.45rem", marginTop: "0.2rem" }}>
+                        <CalendarIcon size={16} style={{ color: "var(--color-gold)" }} />
+                        <span>{quoteState.date}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "0.8rem", padding: "0.35rem 0.75rem", borderRadius: "var(--radius-full)", backgroundColor: "#ECFDF5", color: "#065F46", fontWeight: 700 }}>
+                      ✓ Fecha verificada
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ==================================================
+                PASO 7: DATOS
+                ================================================== */}
+            {currentStep === 7 && (
+              <div className="animate-fade-in">
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 07 / 08</span>
+                  <h2 className="quote-step-title">Datos de contacto</h2>
+                  <p className="quote-step-desc">
+                    Proporciona tus datos para generar tu folio único de seguimiento formal en La Cantera Events.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "1.15rem", marginTop: "1.5rem" }}>
                   <div>
-                    <label className="form-label" htmlFor="client-name">Nombre completo *</label>
-                    <input 
-                      type="text" 
-                      id="client-name"
+                    <label className="form-label" htmlFor="input-name">Nombre completo *</label>
+                    <input
+                      type="text"
+                      id="input-name"
                       className="form-input ph-mask"
-                      placeholder="Ej. Mariana Garza"
+                      placeholder="Ej. Mariana Garza Villarreal"
                       value={quoteState.clientName}
-                      onChange={(e) => setQuoteState(p => ({ ...p, clientName: e.target.value }))}
+                      onChange={(e) => setQuoteState({ ...quoteState, clientName: e.target.value })}
+                      required
                     />
                   </div>
-                  <div>
-                    <label className="form-label" htmlFor="client-phone">WhatsApp o Teléfono *</label>
-                    <input 
-                      type="tel" 
-                      id="client-phone"
-                      className="form-input ph-mask"
-                      placeholder="Ej. 899 123 4567"
-                      value={quoteState.clientPhone}
-                      onChange={(e) => setQuoteState(p => ({ ...p, clientPhone: e.target.value }))}
-                    />
-                  </div>
-                </div>
 
-                <div className="form-grid-2col">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                    <div>
+                      <label className="form-label" htmlFor="input-phone">WhatsApp / Teléfono *</label>
+                      <input
+                        type="tel"
+                        id="input-phone"
+                        className="form-input ph-mask"
+                        placeholder="Ej. 899 925 2352"
+                        value={quoteState.clientPhone}
+                        onChange={(e) => setQuoteState({ ...quoteState, clientPhone: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="form-label" htmlFor="input-email">Correo electrónico *</label>
+                      <input
+                        type="email"
+                        id="input-email"
+                        className="form-input ph-mask"
+                        placeholder="Ej. mariana.garza@gmail.com"
+                        value={quoteState.clientEmail}
+                        onChange={(e) => setQuoteState({ ...quoteState, clientEmail: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="form-label" htmlFor="client-email">Correo electrónico *</label>
-                    <input 
-                      type="email" 
-                      id="client-email"
+                    <label className="form-label" htmlFor="input-company">Empresa o Institución (Opcional)</label>
+                    <input
+                      type="text"
+                      id="input-company"
                       className="form-input ph-mask"
-                      placeholder="ejemplo@correo.com"
-                      value={quoteState.clientEmail}
-                      onChange={(e) => setQuoteState(p => ({ ...p, clientEmail: e.target.value }))}
+                      placeholder="Ej. Consorcio Industrial / Universidad"
+                      value={quoteState.company}
+                      onChange={(e) => setQuoteState({ ...quoteState, company: e.target.value })}
                     />
                   </div>
+
                   <div>
-                    <label className="form-label" htmlFor="client-zone">Zona o Ciudad (opcional)</label>
-                    <input 
-                      type="text" 
-                      id="client-zone"
-                      className="form-input ph-mask"
-                      placeholder="Ej. Reynosa Centro"
-                      value={quoteState.cityZone}
-                      onChange={(e) => setQuoteState(p => ({ ...p, cityZone: e.target.value }))}
+                    <label className="form-label" htmlFor="input-comments">Comentarios o requerimientos especiales</label>
+                    <textarea
+                      id="input-comments"
+                      className="form-textarea ph-mask"
+                      rows={3}
+                      placeholder="Indícanos si requieres escenario, pruebas de sonido, horario preferente o especificaciones de montaje..."
+                      value={quoteState.comments}
+                      onChange={(e) => setQuoteState({ ...quoteState, comments: e.target.value })}
                     />
                   </div>
-                </div>
 
-                <div className="form-group-full">
-                  <label className="form-label" htmlFor="client-comments">Comentarios o requerimientos especiales (opcional)</label>
-                  <textarea 
-                    id="client-comments"
-                    className="form-textarea ph-mask"
-                    placeholder="Cuéntanos detalles especiales, horarios o dudas..."
-                    value={quoteState.comments}
-                    onChange={(e) => setQuoteState(p => ({ ...p, comments: e.target.value }))}
-                  />
-                </div>
-
-                <div className="privacy-checkbox-row">
-                  <input 
-                    type="checkbox" 
-                    id="privacy-check"
-                    checked={quoteState.privacyAccepted}
-                    onChange={(e) => setQuoteState(p => ({ ...p, privacyAccepted: e.target.checked }))}
-                    style={{ marginTop: "0.2rem" }}
-                  />
-                  <label htmlFor="privacy-check" style={{ cursor: "pointer", fontSize: "0.84rem", color: "var(--color-text-secondary)" }}>
-                    He leído y acepto el aviso de privacidad demostrativo. Entiendo que paquetes, precios, disponibilidad e imágenes son mostrados con fines demostrativos para La Antigua Eventos.
-                  </label>
+                  {/* Checkbox de Privacidad Estricta */}
+                  <div style={{ padding: "0.9rem 1rem", backgroundColor: "var(--color-bg)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-light)" }}>
+                    <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", cursor: "pointer", fontSize: "0.82rem", color: "var(--color-text-secondary)" }}>
+                      <input
+                        type="checkbox"
+                        checked={quoteState.privacyAccepted}
+                        onChange={(e) => setQuoteState({ ...quoteState, privacyAccepted: e.target.checked })}
+                        style={{ marginTop: "3px" }}
+                      />
+                      <span>
+                        He leído y acepto el <strong>aviso de privacidad demostrativo</strong>. Entiendo que los precios, montajes, capacidades y disponibilidad mostrados son de carácter demostrativo para La Cantera Events. Sus datos están protegidos contra telemetría invasiva.
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* ==================================================
-                PASO 7: RESUMEN DE COTIZACIÓN
+                PASO 8: RESUMEN Y ENVÍO
                 ================================================== */}
-            {currentStep === 7 && (
+            {currentStep === 8 && (
               <div className="animate-fade-in">
-                <span className="step-num-eyebrow">PASO 07</span>
-                <h2 className="quote-step-title">Resumen de tu cotización</h2>
-                <p className="quote-step-desc">
-                  Revisa los detalles de tu solicitud antes de enviarla a revisión con La Antigua Eventos.
-                </p>
+                <div className="step-header-box">
+                  <span className="step-num-eyebrow">PASO 08 / 08</span>
+                  <h2 className="quote-step-title">Resumen de tu cotización</h2>
+                  <p className="quote-step-desc">
+                    Revisa todos los parámetros seleccionados antes de enviar tu solicitud a revisión con La Cantera Events.
+                  </p>
+                </div>
 
-                <div className="quote-summary-sheet">
-                  <div className="sheet-header-row">
+                <div style={{ backgroundColor: "var(--color-bg)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-light)", padding: "1.5rem", margin: "1.5rem 0" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem", marginBottom: "1.25rem" }}>
                     <div>
-                      <div className="sheet-brand-name">La Antigua Eventos</div>
-                      <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)" }}>Reynosa, Tamaulipas</span>
+                      <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Tipo de Evento:</span>
+                      <div style={{ fontWeight: 700, color: "var(--color-primary)", fontSize: "1.05rem" }}>{selectedTypeObj.name}</div>
                     </div>
-                    <span className="badge badge-accent">Cotización Demostrativa</span>
+
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Asistentes Proyectados:</span>
+                      <div style={{ fontWeight: 700, color: "var(--color-primary)", fontSize: "1.05rem" }}>{quoteState.guests} personas</div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Espacio Elegido:</span>
+                      <div style={{ fontWeight: 700, color: "var(--color-primary)", fontSize: "1.05rem" }}>{selectedSpace.name}</div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Montaje:</span>
+                      <div style={{ fontWeight: 700, color: "var(--color-primary)", fontSize: "1.05rem" }}>{selectedLayout.name}</div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Fecha Consultada:</span>
+                      <div style={{ fontWeight: 700, color: "var(--color-primary)", fontSize: "1.05rem" }}>{quoteState.date}</div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>Contacto Demo:</span>
+                      <div style={{ fontWeight: 600, color: "var(--color-primary)" }} className="ph-mask">{quoteState.clientName}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }} className="ph-mask">{quoteState.clientPhone}</div>
+                    </div>
                   </div>
 
-                  <div className="sheet-rows-list">
-                    <div className="sheet-row">
-                      <span className="sheet-label">Fecha tentativa:</span>
-                      <span className="sheet-val" style={{ textTransform: "capitalize" }}>
-                        {formatHumanDate(quoteState.date) || "No definida"}
+                  {/* Servicios Extras */}
+                  <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: "1rem", marginBottom: "1rem" }}>
+                    <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase", display: "block", marginBottom: "0.4rem" }}>
+                      Servicios adicionales ({quoteState.selectedExtras.length}):
+                    </span>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                      {quoteState.selectedExtras.length === 0 && (
+                        <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Ninguno seleccionado</span>
+                      )}
+                      {quoteState.selectedExtras.map(extraId => {
+                        const extraObj = initialExtrasData.find(e => e.id === extraId);
+                        return (
+                          <span key={extraId} style={{ fontSize: "0.75rem", padding: "0.2rem 0.5rem", borderRadius: "3px", backgroundColor: "var(--color-surface)", border: "1px solid var(--border-light)" }}>
+                            {extraObj?.name} (+${extraObj?.price.toLocaleString("es-MX")})
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Desglose de Estimado */}
+                  <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: "1rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <div>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-primary)", textTransform: "uppercase" }}>
+                        Estimado Total Demostrativo:
                       </span>
-                    </div>
-
-                    <div className="sheet-row">
-                      <span className="sheet-label">Tipo de evento:</span>
-                      <span className="sheet-val">{eventTypeName}</span>
-                    </div>
-                    <div className="sheet-row">
-                      <span className="sheet-label">Invitados previstos:</span>
-                      <span className="sheet-val">{quoteState.guests} personas</span>
-                    </div>
-                    <div className="sheet-row">
-                      <span className="sheet-label">Opción seleccionada:</span>
-                      <span className="sheet-val">{selectedPackage.name} (${basePrice.toLocaleString("es-MX")})</span>
-                    </div>
-                    {guestsAdjustment > 0 && (
-                      <div className="sheet-row">
-                        <span className="sheet-label">Ajuste por invitados adicionales:</span>
-                        <span className="sheet-val">+${guestsAdjustment.toLocaleString("es-MX")}</span>
+                      <div style={{ fontSize: "0.74rem", color: "var(--color-stone)" }}>
+                        Base espacio + ajuste asistentes + montaje + servicios
                       </div>
-                    )}
-                    <div className="sheet-row">
-                      <span className="sheet-label">Servicios extras seleccionados ({quoteState.selectedExtras.length}):</span>
-                      <span className="sheet-val">+${extrasTotal.toLocaleString("es-MX")}</span>
                     </div>
-                    <div className="sheet-row" style={{ borderTop: "1px dashed var(--border-light)", paddingTop: "0.6rem" }}>
-                      <span className="sheet-label">Cliente solicitante:</span>
-                      <span className="sheet-val ph-mask">{quoteState.clientName} ({quoteState.clientPhone})</span>
-                    </div>
-                  </div>
 
-                  <div className="sheet-total-bar">
-                    <div>
-                      <span style={{ fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "0.08em", opacity: 0.8, display: "block" }}>Total Estimado</span>
-                      <div className="sheet-total-num">${estimatedTotal.toLocaleString("es-MX")} MXN</div>
-                    </div>
-                    <div style={{ textAlign: "right", fontSize: "0.8rem", opacity: 0.9 }}>
-                      <div>Anticipo sugerido:</div>
-                      <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--color-champagne)" }}>${suggestedDeposit.toLocaleString("es-MX")} MXN</div>
+                    <div style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--color-primary)" }}>
+                      ${estimatedTotal.toLocaleString("es-MX")} MXN
                     </div>
                   </div>
+                </div>
 
-                  <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem", flexWrap: "wrap" }}>
-                    <button type="button" className="btn btn-outline" onClick={handlePrevStep}>
-                      <ArrowLeftIcon size={16} />
-                      <span>Editar datos</span>
-                    </button>
-                    <button type="button" className="btn btn-primary" onClick={handleSubmitRequest} style={{ flexGrow: 1 }}>
-                      <span>Enviar solicitud de fecha</span>
-                      <ArrowRightIcon size={18} />
-                    </button>
-                  </div>
+                <div style={{ textAlign: "center", marginTop: "2rem" }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-lg btn-block"
+                    onClick={handleSubmitQuote}
+                    style={{ padding: "1.1rem", fontSize: "1.05rem", fontWeight: 700 }}
+                  >
+                    <SparklesIcon size={18} />
+                    <span>Confirmar y Enviar Solicitud</span>
+                    <ArrowRightIcon size={18} />
+                  </button>
+                  <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", display: "block", marginTop: "0.65rem" }}>
+                    * Al enviar, se generará tu folio formal <strong>CAN-...</strong> con apartado demostrativo y seguimiento directo vía WhatsApp y correo.
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Navegación entre pasos (Anterior / Siguiente para pasos 1 a 6) */}
-            {currentStep < 7 && (
-              <div className="step-actions-row">
-                {currentStep > 1 ? (
-                  <button 
-                    type="button" 
-                    className="btn btn-outline"
-                    onClick={handlePrevStep}
-                  >
-                    <ArrowLeftIcon size={16} />
-                    <span>Anterior</span>
-                  </button>
-                ) : (
-                  <Link to="/" className="btn btn-outline">
-                    <ArrowLeftIcon size={16} />
-                    <span>Volver al inicio</span>
-                  </Link>
-                )}
-
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={handleNextStep}
+            {/* Stepper Navigation Buttons */}
+            <div className="step-actions-row">
+              {currentStep > 1 ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={goToPrevStep}
                 >
-                  <span>Continuar</span>
-                  <ArrowRightIcon size={16} />
+                  <ArrowLeftIcon size={15} />
+                  <span>Paso anterior</span>
                 </button>
-              </div>
-            )}
-          </main>
+              ) : <div />}
 
-          {/* Columna Derecha: Sidebar de Desglose Dinámico de Precio */}
-          <aside className="quote-sidebar-calculator">
-            <span className="calc-badge-demo">COTIZACIÓN DEMOSTRATIVA</span>
-            <h3 className="calc-sidebar-title">Presupuesto Estimado</h3>
-
-            <div className="calc-total-box">
-              <span className="calc-total-label">Total aproximado</span>
-              <div className="calc-total-val">
-                ${estimatedTotal.toLocaleString("es-MX")} <span style={{ fontSize: "1rem", fontWeight: 500 }}>MXN</span>
-              </div>
+              {currentStep < 8 ? (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={goToNextStep}
+                >
+                  <span>Siguiente paso</span>
+                  <ArrowRightIcon size={15} />
+                </button>
+              ) : null}
             </div>
+          </div>
+
+          {/* Sticky Summary Bar / Sidebar Calculator */}
+          <aside className="quote-sidebar-calculator">
+            <h3 className="calc-sidebar-title">Resumen en Vivo</h3>
+            <span className="calc-badge-demo">Cotización Estimada · DEMO</span>
 
             <div className="calc-breakdown-list">
               <div className="calc-line-item">
-                <span>Opción ({selectedPackage.name}):</span>
-                <span className="strong">${basePrice.toLocaleString("es-MX")}</span>
+                <span>Tipo de evento:</span>
+                <strong className="calc-line-val" style={{ color: "var(--color-charcoal-deep)" }}>{selectedTypeObj.name}</strong>
               </div>
               <div className="calc-line-item">
-                <span>Invitados ({quoteState.guests} pax):</span>
-                <span className="strong">{guestsAdjustment > 0 ? `+$${guestsAdjustment.toLocaleString("es-MX")}` : "Incluido"}</span>
+                <span>Asistentes estimados:</span>
+                <strong className="calc-line-val" style={{ color: "var(--color-charcoal-deep)" }}>{quoteState.guests} personas</strong>
               </div>
               <div className="calc-line-item">
-                <span>Servicios extras ({quoteState.selectedExtras.length}):</span>
-                <span className="strong">+${extrasTotal.toLocaleString("es-MX")}</span>
+                <span>Espacio base:</span>
+                <strong className="calc-line-val" style={{ color: "var(--color-charcoal-deep)" }}>{selectedSpace.name}</strong>
               </div>
-              <div className="calc-line-item strong" style={{ borderTop: "1px solid var(--border-light)", paddingTop: "0.5rem" }}>
-                <span>Fecha:</span>
-                <span style={{ color: quoteState.date ? "var(--color-charcoal-deep)" : "var(--color-text-muted)" }}>
-                  {quoteState.date || "Por seleccionar"}
-                </span>
+              <div className="calc-line-item">
+                <span>Configuración de montaje:</span>
+                <strong className="calc-line-val" style={{ color: "var(--color-charcoal-deep)" }}>{selectedLayout.name}</strong>
+              </div>
+              <div className="calc-line-item">
+                <span>Servicios y extras:</span>
+                <strong className="calc-line-val" style={{ color: "var(--color-charcoal-deep)" }}>
+                  {quoteState.selectedExtras.length > 0 ? `${quoteState.selectedExtras.length} seleccionados` : "Sin extras"}
+                </strong>
+              </div>
+              <div className="calc-line-item">
+                <span>Fecha tentativa:</span>
+                <strong className="calc-line-val" style={{ color: "var(--color-charcoal-deep)" }}>{quoteState.date || "Por definir"}</strong>
               </div>
             </div>
 
-            <p className="calc-disclaimer">
-              El precio final dependería de la fecha, servicios seleccionados y requerimientos específicos del evento.
-            </p>
+            <div className="calc-total-box">
+              <span className="calc-total-label">Inversión Estimada:</span>
+              <div className="calc-total-val" style={{ color: "var(--color-primary)" }}>
+                ${estimatedTotal.toLocaleString("es-MX")} <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-stone)" }}>MXN</span>
+              </div>
+            </div>
 
-            <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-light)", fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
-              Anticipo demo sugerido: <strong style={{ color: "var(--color-charcoal-deep)" }}>${suggestedDeposit.toLocaleString("es-MX")} MXN</strong>
+            <div className="calc-disclaimer">
+              * Estimación demostrativa en tiempo real. La propuesta formal final se valida según agenda, requerimientos logísticos y banquete con el equipo de La Cantera Events.
             </div>
           </aside>
         </div>

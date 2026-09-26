@@ -1,4 +1,4 @@
-/* Landing Page Editorial Styles: BS EventFlow — La Antigua Eventos */
+/* Landing Page Editorial Styles: BS EventFlow — La Cantera Events */
 
 /* 1. HERO SECTION */
 .hero-editorial {
@@ -610,6 +610,13 @@
   color: var(--color-white);
   position: relative;
   overflow: hidden;
+}
+
+/* Solo visible en computadoras de escritorio/laptops, oculto en teléfonos móviles */
+@media (max-width: 992px) {
+  .system-pitch-section {
+    display: none !important;
+  }
 }
 
 .pitch-grid {

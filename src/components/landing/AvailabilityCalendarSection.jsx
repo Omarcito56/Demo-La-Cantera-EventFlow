@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockAvailabilityMap } from "../../data/eventFlowData";
+import { mockAvailabilityMap, getDateAvailabilityStatus } from "../../data/eventFlowData";
 import { ArrowRightIcon, CalendarIcon, SparklesIcon, CheckCircleIcon } from "../common/Icons";
 import { trackEvent } from "../../analytics/analytics";
 
@@ -8,7 +8,6 @@ export const AvailabilityCalendarSection = () => {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Generar días del mes actual y próximos 28 días
   const today = new Date();
   const currentMonthName = today.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
 
@@ -18,12 +17,12 @@ export const AvailabilityCalendarSection = () => {
     d.setDate(today.getDate() + i);
     const iso = d.toISOString().split("T")[0];
     
-    // Mapeo demostrativo con 4 estados oficiales:
-    // "disponible", "limitada", "proceso", "apartada"
-    const status = mockAvailabilityMap[iso] || (
+    // Mapeo demostrativo con 4 estados oficiales requeridos:
+    // "disponible" (Disponible), "limitada" (En consulta), "apartada" (Apartada), "bloqueada" (No disponible)
+    const rawStatus = mockAvailabilityMap[iso] || (
       i % 6 === 0 ? "apartada" :
       i % 4 === 0 ? "limitada" :
-      i % 3 === 0 ? "proceso" :
+      i % 7 === 0 ? "bloqueada" :
       "disponible"
     );
     
@@ -31,7 +30,7 @@ export const AvailabilityCalendarSection = () => {
       dateStr: iso,
       dayNum: d.getDate(),
       dayName: d.toLocaleDateString("es-MX", { weekday: "short" }),
-      status
+      status: rawStatus
     });
   }
 
@@ -66,37 +65,37 @@ export const AvailabilityCalendarSection = () => {
         };
       case "limitada":
         return {
-          label: "Disponibilidad limitada",
-          shortLabel: "Limitada",
+          label: "En consulta",
+          shortLabel: "En consulta",
           tagClass: "status-tag-limited",
           badgeColor: "#92400E",
           badgeBg: "#FEF3C7",
           dotColor: "#F59E0B",
           canQuote: true,
-          message: "Existe una solicitud en proceso para esta fecha. Aún es posible registrar tu cotización preferencial."
-        };
-      case "proceso":
-        return {
-          label: "En proceso",
-          shortLabel: "En proceso",
-          tagClass: "status-tag-process",
-          badgeColor: "#A86C60",
-          badgeBg: "#F9EFEF",
-          dotColor: "#A86C60",
-          canQuote: true,
-          message: "Existe una solicitud activa en revisión. Puedes enviar tus datos para consultar alternativas o lista prioritaria."
+          message: "Existe una solicitud en revisión para esta fecha. Puedes enviar tu cotización para lista prioritaria."
         };
       case "apartada":
-      default:
         return {
           label: "Apartada",
           shortLabel: "Apartada",
           tagClass: "status-tag-reserved",
+          badgeColor: "#4A4742",
+          badgeBg: "#EDE7DC",
+          dotColor: "#B9A176",
+          canQuote: false,
+          message: "Esta fecha se encuentra apartada con anticipo demostrativo en el calendario."
+        };
+      case "bloqueada":
+      default:
+        return {
+          label: "No disponible",
+          shortLabel: "No disponible",
+          tagClass: "status-tag-blocked",
           badgeColor: "#6B7280",
           badgeBg: "#F3F4F6",
           dotColor: "#6B7280",
           canQuote: false,
-          message: "Esta fecha se encuentra apartada con anticipo en la demostración."
+          message: "Fecha reservada por mantenimiento del recinto o evento masivo ya programado."
         };
     }
   };
@@ -105,10 +104,10 @@ export const AvailabilityCalendarSection = () => {
     <section className="calendar-demo-section" id="disponibilidad">
       <div className="container">
         <div className="section-header-centered">
-          <span className="eyebrow">CONSULTA TU FECHA + ORGANIZA TU EVENTO</span>
+          <span className="eyebrow">CONSULTA TU FECHA + PLANEA TU EVENTO</span>
           <h2 className="section-title-editorial">¿Ya tienes una fecha en mente?</h2>
           <p className="section-subtext">
-            Consulta una fecha y comienza tu solicitud sin esperar a preguntar primero por disponibilidad mediante mensajes.
+            Verifica el estado de cualquier día en nuestra agenda demostrativa antes de iniciar tu solicitud.
           </p>
         </div>
 
@@ -121,20 +120,20 @@ export const AvailabilityCalendarSection = () => {
             </div>
             <div className="legend-pill">
               <span className="legend-color-dot" style={{ backgroundColor: "#F59E0B" }} />
-              <span>Disponibilidad limitada</span>
+              <span>En consulta</span>
             </div>
             <div className="legend-pill">
-              <span className="legend-color-dot" style={{ backgroundColor: "#A86C60" }} />
-              <span>En proceso</span>
+              <span className="legend-color-dot" style={{ backgroundColor: "#B9A176" }} />
+              <span>Apartada</span>
             </div>
             <div className="legend-pill">
               <span className="legend-color-dot" style={{ backgroundColor: "#6B7280" }} />
-              <span>Apartada</span>
+              <span>No disponible</span>
             </div>
           </div>
 
           <div style={{ textAlign: "center", marginBottom: "1.25rem", textTransform: "capitalize", fontWeight: 700, fontSize: "1.1rem", color: "var(--color-charcoal-deep)", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
-            <CalendarIcon size={18} style={{ color: "var(--color-terracotta)" }} />
+            <CalendarIcon size={18} style={{ color: "var(--color-gold)" }} />
             <span>{currentMonthName}</span>
           </div>
 
@@ -154,17 +153,15 @@ export const AvailabilityCalendarSection = () => {
                 <div 
                   key={idx} 
                   className={`calendar-day-cell ${isSelected ? "selected" : ""}`}
-                  style={isSelected ? { borderColor: "var(--color-terracotta)", backgroundColor: "var(--color-terracotta-soft)", transform: "scale(1.03)" } : {}}
+                  style={isSelected ? { borderColor: "var(--color-gold)", backgroundColor: "var(--color-gold-soft)", transform: "scale(1.03)" } : {}}
                   onClick={() => handleDateSelect(day)}
                 >
-                  <span className="day-cell-num" style={isSelected ? { color: "var(--color-terracotta)", fontWeight: 700 } : {}}>
+                  <span className="day-cell-num" style={isSelected ? { color: "var(--color-charcoal-deep)", fontWeight: 700 } : {}}>
                     {day.dayNum}
                   </span>
-                  {/* Etiqueta de texto para desktop/tablet */}
                   <span className={`day-cell-status-tag ${details.tagClass}`}>
                     {details.shortLabel || details.label}
                   </span>
-                  {/* Micro indicador de punto para móvil */}
                   <span 
                     className="day-cell-dot" 
                     style={{ backgroundColor: details.dotColor, display: "inline-block" }}
@@ -209,7 +206,7 @@ export const AvailabilityCalendarSection = () => {
                     onClick={() => handleProceedToQuote(selectedDate.dateStr)}
                   >
                     <SparklesIcon size={15} />
-                    <span>Consultar mi fecha</span>
+                    <span>Planear en esta fecha</span>
                     <ArrowRightIcon size={15} />
                   </button>
                 </div>
@@ -225,14 +222,14 @@ export const AvailabilityCalendarSection = () => {
                 onClick={() => handleProceedToQuote("")}
               >
                 <CalendarIcon size={15} />
-                <span>Consultar mi fecha en el cotizador</span>
+                <span>Consultar fecha en el cotizador</span>
                 <ArrowRightIcon size={15} />
               </button>
             </div>
           )}
 
           <p style={{ textAlign: "center", marginTop: "1.75rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
-            Disponibilidad mostrada únicamente con fines demostrativos.
+            Disponibilidad demostrativa. Sujeta a confirmación por parte de La Cantera Events.
           </p>
         </div>
       </div>

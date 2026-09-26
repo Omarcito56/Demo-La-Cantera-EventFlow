@@ -1,78 +1,103 @@
 :root {
   /* ==================================================
-     Identidad Visual: "Romantic Modern Venue"
-     Propuesta: La Antigua Eventos (Reynosa, Tamaulipas)
-     Paleta Oficial: Crema, Rosa Polvo, Terracota, Verde Oscuro, Carbón, Champagne, Blanco
+     Identidad Visual: "Large Event Venue Experience"
+     Propuesta Comercial: La Cantera Events (Reynosa, Tamaulipas)
+     Paleta Oficial:
+     - Negro: #181818
+     - Arena: #D8C7AA
+     - Crema: #F5F1E9
+     - Gris piedra: #77736C
+     - Dorado suave: #B9A176
+     - Blanco: #FFFFFF
      ================================================== */
 
   /* Colores Principales de Marca */
-  --color-terracotta: #A86C60;          /* Terracota cálido y elegante */
-  --color-terracotta-dark: #8E5449;     /* Terracota profundo */
-  --color-terracotta-light: #C08175;    /* Terracota suave */
-  --color-terracotta-soft: #F9EFEF;     /* Fondo sutil terracota */
+  --color-black: #181818;               /* Negro arquitectónico sobrio */
+  --color-black-deep: #111111;          /* Negro profundo para contrastes */
+  --color-black-soft: #232323;          /* Negro suave / elevación */
+  
+  --color-arena: #D8C7AA;               /* Arena cantera refinada */
+  --color-arena-light: #E7DDCA;         /* Arena clara / bordes sutiles */
+  --color-arena-soft: #F2ECE0;          /* Fondo arena muy tenue */
+  --color-arena-dark: #C4B08F;          /* Arena oscura para texto y acentos */
 
-  --color-dusty-rose: #D8B5AF;          /* Rosa polvo romántico */
-  --color-dusty-rose-soft: #FAF3F2;     /* Fondo sutil rosa polvo */
-  --color-dusty-rose-dark: #BC968F;     /* Rosa polvo medio */
+  --color-cream: #F5F1E9;               /* Crema base elegante */
+  --color-cream-alt: #EDE7DC;           /* Crema secundario suave */
+  --color-cream-soft: #FAF8F4;          /* Crema luminoso */
 
-  --color-green-dark: #4A574C;          /* Verde oscuro botánico y natural */
-  --color-green-dark-soft: #EFF3F0;     /* Fondo sutil verde olivo */
-  --color-green-light: #657567;         /* Verde botánico suave */
+  --color-stone: #77736C;               /* Gris piedra arquitectónico */
+  --color-stone-light: #9B9790;         /* Gris piedra medio */
+  --color-stone-dark: #4A4742;          /* Gris piedra profundo */
+  --color-stone-soft: #EFECE6;          /* Gris piedra tenue */
 
-  --color-champagne: #D8C6A5;           /* Champagne refinado */
-  --color-champagne-dark: #C2AE8B;      /* Champagne dorado */
-  --color-champagne-light: #EDE4D3;     /* Champagne crema */
-  --color-champagne-soft: #FAF6EE;      /* Fondo suave champagne */
+  --color-gold: #B9A176;                /* Dorado suave premium */
+  --color-gold-hover: #A38B60;          /* Dorado suave hover */
+  --color-gold-light: #D4C3A3;          /* Dorado claro */
+  --color-gold-soft: #F7F3EB;           /* Fondo suave dorado */
 
-  --color-cream: #FAF6EF;               /* Crema cálido base */
-  --color-cream-alt: #F3EBDD;           /* Crema secundario suave */
-
-  --color-charcoal-deep: #282725;       /* Carbón elegante */
-  --color-charcoal-light: #423F3C;      /* Carbón suave */
   --color-white: #FFFFFF;               /* Blanco puro */
-  --color-text-secondary: #5F5A56;      /* Texto secundario de alta legibilidad */
-  --color-text-muted: #8C8681;          /* Texto sutil */
-  --color-text-primary: #282725;        /* Carbón principal */
+
+  /* Tipografía y Textos */
+  --color-text-primary: #181818;        /* Negro arquitectónico */
+  --color-text-secondary: #4A4742;      /* Gris piedra oscuro legible */
+  --color-text-muted: #77736C;          /* Gris piedra */
   --color-text-inverse: #FFFFFF;
 
   /* Mapeo Semántico Oficial */
-  --color-primary: #A86C60;             /* Terracota para marca y botones primarios */
-  --color-primary-light: #C08175;
-  --color-primary-hover: #8E5449;
-  --color-primary-soft: #F9EFEF;
+  --color-primary: #181818;             /* Negro arquitectónico para estructura y títulos */
+  --color-primary-light: #2A2A2A;
+  --color-primary-hover: #000000;
+  --color-primary-soft: #F5F1E9;
 
-  --color-accent: #D8C6A5;              /* Champagne para acentos dorados y detalles */
-  --color-accent-hover: #C2AE8B;
-  --color-accent-soft: #FAF6EE;
-  --color-accent-border: #E8D9BF;
+  --color-accent: #B9A176;              /* Dorado suave para acentos refinados */
+  --color-accent-hover: #A38B60;
+  --color-accent-soft: #F7F3EB;
+  --color-accent-border: #D8C7AA;
 
-  --color-cta: #A86C60;                 /* Terracota para llamados a la acción */
-  --color-cta-hover: #8E5449;
-  --color-cta-soft: #F9EFEF;
+  --color-cta: #181818;                 /* Primario sobrio */
+  --color-cta-hover: #2E2E2E;
+  --color-cta-soft: #F5F1E9;
 
-  --color-bg: #FAF6EF;                  /* Fondo general crema */
-  --color-bg-alt: #F3EBDD;              /* Fondo alternativo crema cálido */
+  --color-bg: #F5F1E9;                  /* Fondo general crema */
+  --color-bg-alt: #EDE7DC;              /* Fondo alternativo crema */
   --color-surface: #FFFFFF;             /* Superficie de tarjetas y modales */
-  --color-surface-hover: #FCF9F5;
+  --color-surface-hover: #FAF8F4;
 
-  /* Alias de compatibilidad: redirigidos al nuevo Terracota (CERO borgoña dominante) */
-  --color-burgundy: #A86C60;
-  --color-burgundy-dark: #8E5449;
-  --color-burgundy-light: #C08175;
-  --color-burgundy-soft: #F9EFEF;
+  /* Alias de compatibilidad: redirigidos a la paleta oficial La Cantera */
+  --color-terracotta: #B9A176;          /* Redirigido a Dorado Suave */
+  --color-terracotta-dark: #A38B60;
+  --color-terracotta-light: #D8C7AA;
+  --color-terracotta-soft: #F7F3EB;
+  --color-dusty-rose: #D8C7AA;          /* Redirigido a Arena */
+  --color-dusty-rose-soft: #F5F1E9;
+  --color-green-dark: #3E4B40;          /* Acento sobrio */
+  --color-champagne: #B9A176;
+  --color-champagne-dark: #A38B60;
+  --color-champagne-light: #D8C7AA;
+  --color-champagne-soft: #F7F3EB;
+  --color-charcoal-deep: #181818;
+  --color-charcoal-light: #333333;
+  --color-burgundy: #181818;
+  --color-burgundy-dark: #111111;
+  --color-burgundy-light: #B9A176;
+  --color-burgundy-soft: #F7F3EB;
 
-  /* Gradientes Editoriales Románticos */
-  --gradient-gold: linear-gradient(135deg, #D8C6A5 0%, #EDE4D3 50%, #C2AE8B 100%);
-  --gradient-gold-subtle: linear-gradient(135deg, rgba(216, 198, 165, 0.3) 0%, rgba(216, 198, 165, 0.1) 100%);
-  --gradient-terracotta: linear-gradient(135deg, #A86C60 0%, #BD7E72 100%);
-  --gradient-terracotta-subtle: linear-gradient(135deg, rgba(168, 108, 96, 0.15) 0%, rgba(168, 108, 96, 0.04) 100%);
-  --gradient-rose-subtle: linear-gradient(135deg, rgba(216, 181, 175, 0.25) 0%, rgba(250, 246, 239, 0.5) 100%);
-  --gradient-burgundy: linear-gradient(135deg, #A86C60 0%, #BD7E72 100%);
-  --gradient-burgundy-subtle: linear-gradient(135deg, rgba(168, 108, 96, 0.15) 0%, rgba(168, 108, 96, 0.04) 100%);
-  --gradient-dark-hero: linear-gradient(145deg, #282725 0%, #423F3C 60%, #1E1D1C 100%);
-  --gradient-card-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 246, 239, 0.88) 100%);
+  /* Gradientes Arquitectónicos Sobrios */
+  --gradient-primary: linear-gradient(135deg, #181818 0%, #2A2A2A 100%);
+  --gradient-burgundy: linear-gradient(135deg, #181818 0%, #2A2A2A 100%);
+  --gradient-gold: linear-gradient(135deg, #B9A176 0%, #D8C7AA 50%, #A38B60 100%);
+  --gradient-gold-subtle: linear-gradient(135deg, rgba(185, 161, 118, 0.25) 0%, rgba(216, 199, 170, 0.08) 100%);
+  --gradient-dark-hero: linear-gradient(145deg, #181818 0%, #262422 60%, #121212 100%);
+  --gradient-arena-subtle: linear-gradient(135deg, rgba(216, 199, 170, 0.35) 0%, rgba(245, 241, 233, 0.6) 100%);
+  --gradient-card-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 241, 233, 0.92) 100%);
+  --gradient-terracotta: linear-gradient(135deg, #B9A176 0%, #D8C7AA 100%);
+  --gradient-terracotta-subtle: linear-gradient(135deg, rgba(185, 161, 118, 0.2) 0%, rgba(185, 161, 118, 0.05) 100%);
 
-  /* Estados */
+  /* Sombras y Elevaciones */
+  --shadow-burgundy: 0 4px 16px rgba(0, 0, 0, 0.24);
+  --shadow-primary: 0 4px 16px rgba(0, 0, 0, 0.24);
+
+  /* Estados de Gestión */
   --status-pending-bg: #FEF3C7;
   --status-pending-text: #92400E;
   --status-pending-border: #FDE68A;
@@ -94,35 +119,35 @@
   --status-purple-border: #DDD6FE;
 
   /* Tipografías */
-  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-heading: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 
-  /* Sombras */
-  --shadow-xs: 0 1px 2px 0 rgba(40, 39, 37, 0.04);
-  --shadow-sm: 0 2px 5px 0 rgba(40, 39, 37, 0.06);
-  --shadow-md: 0 4px 16px -2px rgba(40, 39, 37, 0.08), 0 2px 6px -1px rgba(40, 39, 37, 0.04);
-  --shadow-lg: 0 14px 32px -4px rgba(40, 39, 37, 0.1), 0 6px 14px -2px rgba(40, 39, 37, 0.05);
-  --shadow-xl: 0 24px 44px -8px rgba(40, 39, 37, 0.15);
-  --shadow-gold: 0 8px 24px -4px rgba(216, 198, 165, 0.4);
-  --shadow-terracotta: 0 8px 24px -4px rgba(168, 108, 96, 0.28);
-  --shadow-burgundy: 0 8px 24px -4px rgba(168, 108, 96, 0.28);
+  /* Sombras Arquitectónicas */
+  --shadow-xs: 0 1px 2px 0 rgba(24, 24, 24, 0.04);
+  --shadow-sm: 0 2px 5px 0 rgba(24, 24, 24, 0.06);
+  --shadow-md: 0 4px 16px -2px rgba(24, 24, 24, 0.08), 0 2px 6px -1px rgba(24, 24, 24, 0.04);
+  --shadow-lg: 0 14px 32px -4px rgba(24, 24, 24, 0.1), 0 6px 14px -2px rgba(24, 24, 24, 0.05);
+  --shadow-xl: 0 24px 44px -8px rgba(24, 24, 24, 0.16);
+  --shadow-gold: 0 8px 24px -4px rgba(185, 161, 118, 0.35);
+  --shadow-terracotta: 0 8px 24px -4px rgba(185, 161, 118, 0.3);
 
   /* Bordes y Radios */
   --radius-xs: 4px;
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 30px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
-  --border-subtle: 1px solid rgba(216, 198, 165, 0.4);
-  --border-light: 1px solid #ECE3D7;
-  --border-gold: 1px solid #D8C6A5;
-  --border-terracotta: 1px solid #A86C60;
-  --border-burgundy: 1px solid #A86C60;
+  --border-subtle: 1px solid rgba(216, 199, 170, 0.5);
+  --border-light: 1px solid #E5DFD4;
+  --border-arena: 1px solid #D8C7AA;
+  --border-gold: 1px solid #B9A176;
+  --border-stone: 1px solid #77736C;
+  --border-black: 1px solid #181818;
 
   /* Transiciones */
   --transition-fast: 0.15s ease;

@@ -1,15 +1,17 @@
 /* Cotizador Central BS EventFlow: /cotizar y /confirmacion */
 
 .quote-page-wrap {
-  padding: 3rem 0 6rem;
+  padding: 3.5rem 0 6rem;
   background-color: var(--color-bg);
   min-height: calc(100vh - var(--navbar-height));
 }
 
-.quote-header-box {
+.quote-header-box,
+.quote-page-header {
   text-align: center;
   max-width: 680px;
-  margin: 0 auto 2.5rem;
+  margin: 0 auto 3.25rem;
+  padding: 0 1rem;
 }
 
 .quote-demo-badge {
@@ -29,12 +31,15 @@
 .quote-title {
   font-size: clamp(2rem, 3.8vw, 2.75rem);
   color: var(--color-charcoal-deep);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.15;
 }
 
 .quote-subtext {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0;
 }
 
 /* Stepper Progress Bar */
@@ -42,8 +47,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 880px;
-  margin: 0 auto 2.75rem;
+  max-width: 980px;
+  margin: 2.75rem auto 2.5rem;
   position: relative;
   padding: 0 1rem;
 }
@@ -51,8 +56,8 @@
 .stepper-progress-line {
   position: absolute;
   top: 18px;
-  left: 3rem;
-  right: 3rem;
+  left: 2.5rem;
+  right: 2.5rem;
   height: 2px;
   background-color: var(--border-light);
   z-index: 1;
@@ -75,6 +80,12 @@
   border: none;
   cursor: pointer;
   color: var(--color-text-muted);
+  flex: 1;
+  max-width: 110px;
+}
+
+.stepper-step-item:disabled {
+  cursor: default;
 }
 
 .stepper-circle {
@@ -93,16 +104,17 @@
 }
 
 .stepper-step-item.active .stepper-circle {
-  background-color: var(--color-charcoal-deep);
-  border-color: var(--color-charcoal-deep);
-  color: var(--color-champagne);
-  box-shadow: 0 0 0 4px rgba(183, 154, 107, 0.25);
+  background-color: var(--color-primary);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  box-shadow: 0 0 0 4px rgba(185, 161, 118, 0.25);
 }
 
 .stepper-step-item.completed .stepper-circle {
-  background-color: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-white);
+  background-color: var(--color-gold);
+  border-color: var(--color-gold);
+  color: #181818;
+  font-weight: 700;
 }
 
 .stepper-label {
@@ -115,6 +127,10 @@
 .stepper-step-item.active .stepper-label {
   color: var(--color-charcoal-deep);
   font-weight: 700;
+}
+
+.stepper-step-item.completed .stepper-label {
+  color: var(--color-charcoal-deep);
 }
 
 /* Cotizador Layout: Main Step Card + Sidebar / Bar de Cotización */
@@ -375,7 +391,269 @@
   color: var(--color-charcoal-deep);
 }
 
-/* PASO 4: EXTRAS */
+/* ==================================================
+   PASO 01: TIPOS DE EVENTO
+   ================================================== */
+.type-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1.15rem;
+  margin-top: 1.5rem;
+}
+
+.type-picker-card {
+  padding: 1.15rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-light);
+  background-color: var(--color-surface);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-xs);
+}
+
+.type-picker-card:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.type-picker-card.selected {
+  border-color: var(--color-primary);
+  background-color: #F7F3EB;
+  box-shadow: 0 0 0 2px var(--color-gold);
+}
+
+.type-picker-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.type-picker-cat {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-stone);
+  font-weight: 700;
+}
+
+.type-picker-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--color-charcoal-deep);
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.type-picker-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ==================================================
+   PASO 03: SELECCIÓN DE ESPACIOS
+   ================================================== */
+.space-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.space-card-item {
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: var(--shadow-xs);
+}
+
+.space-card-item:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.space-card-item.selected {
+  border-color: var(--color-primary);
+  background-color: #FAF8F4;
+  box-shadow: 0 0 0 2px var(--color-gold);
+}
+
+.space-card-img-wrap {
+  height: 150px;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-charcoal-deep);
+}
+
+.space-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.space-card-item:hover .space-card-img-wrap img {
+  transform: scale(1.04);
+}
+
+.space-card-badge {
+  position: absolute;
+  bottom: 0.65rem;
+  left: 0.75rem;
+  background: rgba(24, 24, 24, 0.9);
+  color: var(--color-gold);
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(4px);
+}
+
+.space-card-check {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.75rem;
+  background-color: var(--color-primary);
+  color: var(--color-gold);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--color-gold);
+}
+
+.space-card-body {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.space-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: var(--color-charcoal-deep);
+  margin-bottom: 0.2rem;
+}
+
+.space-card-layout {
+  font-size: 0.82rem;
+  color: var(--color-stone);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.space-card-price {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.space-card-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+.space-card-note {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  border-top: 1px solid var(--border-light);
+  padding-top: 0.5rem;
+}
+
+/* ==================================================
+   PASO 04: SELECCIÓN DE MONTAJES
+   ================================================== */
+.layout-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.15rem;
+  margin-top: 1.5rem;
+}
+
+.layout-card-item {
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  padding: 1.25rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  position: relative;
+  box-shadow: var(--shadow-xs);
+}
+
+.layout-card-item:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+  background-color: #FAF8F4;
+}
+
+.layout-card-item.selected {
+  border-color: var(--color-primary);
+  background-color: #F7F3EB;
+  box-shadow: 0 0 0 2px var(--color-gold);
+}
+
+.layout-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  color: var(--color-charcoal-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.layout-card-item.selected .layout-card-icon {
+  background-color: var(--color-primary);
+  color: var(--color-gold);
+}
+
+.layout-card-name {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-charcoal-deep);
+}
+
+.layout-card-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.35;
+}
+
+/* PASO 5: EXTRAS */
 .extras-selection-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -421,31 +699,37 @@
 }
 
 .extra-toggle-switch {
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
+  width: 48px;
+  min-width: 48px;
+  height: 26px;
+  border-radius: 13px;
   background-color: #D1D5DB;
   position: relative;
-  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  box-sizing: border-box;
 }
 
 .extra-select-card.active .extra-toggle-switch {
-  background-color: var(--color-accent);
+  background-color: #181818;
 }
 
 .toggle-knob {
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 3px;
+  left: 3px;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: var(--color-white);
-  transition: transform var(--transition-fast);
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .extra-select-card.active .toggle-knob {
-  transform: translateX(20px);
+  transform: translateX(22px);
 }
 
 /* PASO 1: FECHA Y DISPONIBILIDAD INTERACTIVA */
@@ -460,7 +744,7 @@
   background: var(--color-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 1.75rem;
   box-shadow: var(--shadow-sm);
 }
 
@@ -469,10 +753,9 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
-  padding-bottom: 0.85rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-light);
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .quote-calendar-month-title {
@@ -484,95 +767,100 @@
   align-items: center;
   gap: 0.6rem;
   text-transform: capitalize;
+  margin: 0;
 }
 
 .quote-calendar-nav {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .quote-calendar-btn {
-  background: var(--color-bg);
-  border: 1px solid var(--border-light);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-light);
+  background: var(--color-surface);
   color: var(--color-charcoal-deep);
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
+  cursor: pointer;
   transition: all var(--transition-fast);
+  padding: 0;
 }
 
 .quote-calendar-btn:hover:not(:disabled) {
-  background: var(--color-charcoal-deep);
-  color: var(--color-white);
-  border-color: var(--color-charcoal-deep);
+  border-color: var(--color-gold);
+  background: #181818;
+  color: #FFFFFF;
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .quote-calendar-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .quote-calendar-legend {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 1.25rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1.15rem;
   background-color: var(--color-bg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
+  flex-wrap: wrap;
 }
 
 .quote-calendar-legend-item {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-charcoal-deep);
 }
 
 .quote-calendar-legend-dot {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .quote-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .quote-calendar-dow {
   text-align: center;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-muted);
-  padding-bottom: 0.5rem;
+  letter-spacing: 0.08em;
+  color: var(--color-stone);
+  padding-bottom: 0.75rem;
 }
 
 .quote-calendar-cell {
   background: var(--color-surface);
   border: 1.5px solid var(--border-light);
-  border-radius: var(--radius-md);
-  min-height: 68px;
-  padding: 0.45rem 0.3rem;
+  border-radius: var(--radius-sm);
+  min-height: 52px;
+  padding: 0.45rem 0.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 0.3rem;
   cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
@@ -588,22 +876,42 @@
 
 .quote-calendar-cell:hover:not(.past):not(.placeholder) {
   transform: translateY(-2px);
-  border-color: var(--color-accent);
+  border-color: var(--color-gold);
   box-shadow: var(--shadow-sm);
 }
 
 .quote-calendar-cell.past {
-  background-color: var(--color-bg);
-  opacity: 0.35;
+  background-color: #F8F7F4;
+  opacity: 0.45;
   cursor: not-allowed;
   border-color: transparent;
 }
 
+.quote-calendar-cell.past .quote-calendar-cell-num {
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.quote-calendar-cell.status-disponible {
+  border-color: rgba(16, 185, 129, 0.45);
+  background-color: #F0FDF4;
+}
+
+.quote-calendar-cell.status-limitada {
+  border-color: rgba(245, 158, 11, 0.45);
+  background-color: #FFFBEB;
+}
+
+.quote-calendar-cell.status-apartada {
+  border-color: rgba(185, 161, 118, 0.4);
+  background-color: #FAF8F4;
+}
+
 .quote-calendar-cell.selected {
-  border: 2px solid var(--color-terracotta) !important;
-  background-color: var(--color-terracotta-soft) !important;
-  box-shadow: 0 0 0 3px rgba(168, 108, 96, 0.22);
-  transform: scale(1.02);
+  border: 2px solid #181818 !important;
+  background-color: #181818 !important;
+  box-shadow: 0 4px 14px rgba(24, 24, 24, 0.28) !important;
+  transform: scale(1.04);
   z-index: 2;
 }
 
@@ -611,28 +919,36 @@
   font-weight: 700;
   font-size: 0.95rem;
   color: var(--color-charcoal-deep);
+  line-height: 1;
 }
 
 .quote-calendar-cell.selected .quote-calendar-cell-num {
-  color: var(--color-terracotta);
+  color: #FFFFFF !important;
+  font-weight: 800;
 }
 
-.quote-calendar-cell-badge {
-  font-size: 0.62rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-full);
-  text-transform: capitalize;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
-}
-
-.quote-calendar-cell-dot {
-  display: none;
-  width: 7px;
-  height: 7px;
+.quote-calendar-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  margin-top: 2px;
+  display: block;
+}
+
+.quote-calendar-dot.dot-disponible {
+  background-color: #10B981;
+}
+
+.quote-calendar-dot.dot-limitada {
+  background-color: #F59E0B;
+}
+
+.quote-calendar-dot.dot-apartada {
+  background-color: #B9A176;
+}
+
+.quote-calendar-cell.selected .quote-calendar-dot {
+  background-color: var(--color-gold) !important;
+  box-shadow: 0 0 6px var(--color-gold);
 }
 
 /* Variantes de Estado en el Calendario */
@@ -1189,20 +1505,30 @@
 
 @media (max-width: 640px) {
   .quote-page-wrap {
-    padding: 1.75rem 0 4rem;
+    padding: 1.5rem 0 3.5rem;
   }
   .stepper-nav {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding: 0 0.25rem;
   }
+  .stepper-step-item {
+    flex: initial;
+    max-width: none;
+  }
   .stepper-circle {
-    width: 30px;
-    height: 30px;
-    font-size: 0.74rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.72rem;
   }
   .stepper-progress-line {
-    left: 1.5rem;
-    right: 1.5rem;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+  }
+  .stepper-mobile-current {
+    display: block;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
   }
   .quote-step-card {
     padding: 1.5rem 1rem;
@@ -1294,59 +1620,54 @@
 
   /* Calendario Cotizador en Móvil */
   .quote-calendar-card {
-    padding: 1.15rem 0.65rem;
+    padding: 1.15rem 0.85rem;
   }
   .quote-calendar-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
   }
   .quote-calendar-month-title {
     font-size: 1.15rem;
-    justify-content: center;
   }
   .quote-calendar-nav {
-    justify-content: space-between;
-    width: 100%;
+    gap: 0.4rem;
   }
   .quote-calendar-btn {
-    padding: 0.35rem 0.65rem;
-    font-size: 0.76rem;
+    width: 32px;
+    height: 32px;
   }
   .quote-calendar-legend {
-    gap: 0.65rem;
-    padding: 0.6rem 0.75rem;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
     justify-content: center;
+    margin-bottom: 1rem;
   }
   .quote-calendar-legend-item {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
   }
   .quote-calendar-grid {
-    gap: 3px;
+    gap: 4px;
   }
   .quote-calendar-dow {
-    font-size: 0.68rem;
-    padding-bottom: 0.35rem;
+    font-size: 0.7rem;
+    padding-bottom: 0.45rem;
   }
   .quote-calendar-cell {
-    min-height: 48px;
+    min-height: 44px;
     padding: 0.35rem 0.15rem;
     border-radius: var(--radius-xs);
   }
   .quote-calendar-cell-num {
-    font-size: 0.82rem;
-  }
-  .quote-calendar-cell-badge {
-    display: none;
-  }
-  .quote-calendar-cell-dot {
-    display: block;
+    font-size: 0.88rem;
   }
   .quote-selected-date-card {
     flex-direction: column;
     align-items: stretch;
     padding: 1rem;
-    gap: 0.85rem;
+    gap: 0.75rem;
     text-align: center;
   }
 }

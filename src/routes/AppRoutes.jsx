@@ -21,6 +21,7 @@ import { AdminClientsPage } from "../pages/admin/AdminClientsPage";
 import { AdminQuotesPage } from "../pages/admin/AdminQuotesPage";
 import { AdminPaymentsPage } from "../pages/admin/AdminPaymentsPage";
 import { AdminPackagesPage } from "../pages/admin/AdminPackagesPage";
+import { AdminSpacesPage } from "../pages/admin/AdminSpacesPage";
 import { AdminSettingsPage } from "../pages/admin/AdminSettingsPage";
 
 export const AppRoutes = () => {
@@ -29,12 +30,13 @@ export const AppRoutes = () => {
       {/* Rutas Públicas */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/espacios" element={<PackagesPage />} />
         <Route path="/paquetes" element={<PackagesPage />} />
         <Route path="/cotizar" element={<QuotePage />} />
         <Route path="/confirmacion" element={<ConfirmationPage />} />
 
         {/* Redirecciones de rutas de proyectos anteriores */}
-        <Route path="/servicios" element={<Navigate to="/paquetes" replace />} />
+        <Route path="/servicios" element={<Navigate to="/espacios" replace />} />
         <Route path="/agendar" element={<Navigate to="/cotizar" replace />} />
       </Route>
 
@@ -46,18 +48,19 @@ export const AppRoutes = () => {
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="solicitudes" element={<AdminRequestsPage />} />
+        <Route path="espacios" element={<AdminSpacesPage />} />
         <Route path="calendario" element={<AdminCalendarPage />} />
         <Route path="eventos" element={<AdminEventsPage />} />
         <Route path="clientes" element={<AdminClientsPage />} />
         <Route path="cotizaciones" element={<AdminQuotesPage />} />
         <Route path="pagos" element={<AdminPaymentsPage />} />
-        <Route path="paquetes" element={<AdminPackagesPage />} />
+        <Route path="paquetes" element={<AdminSpacesPage />} />
         <Route path="configuracion" element={<AdminSettingsPage />} />
 
         {/* Aliases internos para compatibilidad */}
         <Route path="agenda" element={<Navigate to="/admin/calendario" replace />} />
         <Route path="citas" element={<Navigate to="/admin/solicitudes" replace />} />
-        <Route path="servicios" element={<Navigate to="/admin/paquetes" replace />} />
+        <Route path="servicios" element={<Navigate to="/admin/espacios" replace />} />
       </Route>
 
       {/* Fallback */}

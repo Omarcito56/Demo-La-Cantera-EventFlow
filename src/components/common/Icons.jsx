@@ -321,18 +321,21 @@ export const BuildingIcon = ({ size = 20, className = "" }) => (
   </svg>
 );
 
-export const LaAntiguaLogoIcon = ({ size = 24, className = "" }) => (
+export const LaCanteraLogoIcon = ({ size = 24, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    {/* Emblema editorial de La Antigua Eventos: Arco de celebración, olivo botánico y monograma sutil */}
-    <path d="M4 21V9a8 8 0 0 1 16 0v12" strokeWidth="1.6" />
-    <path d="M7 21V10a5 5 0 0 1 10 0v11" strokeWidth="1" strokeDasharray="1.5 2" opacity="0.6" />
-    <path d="M12 4v4M10 6h4" strokeWidth="1.4" />
-    <circle cx="12" cy="13" r="2.2" fill="currentColor" fillOpacity="0.25" />
-    <path d="M6 21h12" strokeWidth="1.6" />
+    {/* Emblema arquitectónico de La Cantera Events: Estructura de gran recinto, columnas monumentales y frontispicio sobrio */}
+    <path d="M3 21h18" strokeWidth="1.8" />
+    <path d="M4 18h16" strokeWidth="1.4" />
+    <path d="M6 18V8" strokeWidth="1.6" />
+    <path d="M10 18V8" strokeWidth="1.4" />
+    <path d="M14 18V8" strokeWidth="1.4" />
+    <path d="M18 18V8" strokeWidth="1.6" />
+    <path d="M3 8h18l-9-5-9 5z" strokeWidth="1.6" fill="currentColor" fillOpacity="0.1" />
+    <circle cx="12" cy="6" r="1" fill="currentColor" />
   </svg>
 );
 
-export const EventFlowLogoIcon = LaAntiguaLogoIcon;
+export const EventFlowLogoIcon = LaCanteraLogoIcon;
 
 export const WhatsAppIcon = ({ size = 20, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>

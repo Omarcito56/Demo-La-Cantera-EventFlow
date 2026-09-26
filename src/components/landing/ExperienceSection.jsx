@@ -6,28 +6,28 @@ import { trackEvent } from "../../analytics/analytics";
 const steps = [
   {
     num: "01",
-    title: "Consulta",
-    desc: "Revisa fechas abiertas y consulta disponibilidad en el calendario interactivo sin esperas."
+    title: "Elige espacio",
+    desc: "Explora el Salón Principal, Formato Banquete o Salón Privado según la escala de tu celebración o evento corporativo."
   },
   {
     num: "02",
-    title: "Cotiza",
-    desc: "Selecciona tu formato de evento, número de invitados y recibe un presupuesto estimado en tiempo real."
+    title: "Consulta fecha",
+    desc: "Verifica fechas libres en la agenda interactiva en tiempo real sin tener que esperar confirmaciones lentas."
   },
   {
     num: "03",
-    title: "Personaliza",
-    desc: "Agrega extras a tu medida: mobiliario especial, estación de postres, ambientación y fotografía."
+    title: "Configura y cotiza",
+    desc: "Selecciona el número de asistentes, tipo de montaje (banquete, auditorio, cóctel) y servicios adicionales."
   },
   {
     num: "04",
-    title: "Aparta",
-    desc: "Asegura tu fecha mediante un anticipo pactado y genera tu folio formal de seguimiento."
+    title: "Apartado demo",
+    desc: "Genera tu folio formal único de seguimiento y experimenta la simulación de apartado con anticipo demostrativo."
   },
   {
     num: "05",
-    title: "Da seguimiento",
-    desc: "Coordina detalles operativos, visitas al recinto y mantén la organización centralizada de tu evento."
+    title: "Control total",
+    desc: "Mantén todas las solicitudes, contratos, anticipos y saldos organizados desde un solo sistema centralizado."
   }
 ];
 
@@ -39,14 +39,14 @@ export const ExperienceSection = () => {
           <span className="eyebrow">PASO A PASO</span>
           <h2 className="section-title-editorial">De la fecha al gran día</h2>
           <p className="section-subtext">
-            Un proceso pensado para que organizar tu celebración en La Antigua Eventos sea claro, ágil y sin fricciones desde el primer momento.
+            Un proceso pensado para que planear tu evento en La Cantera Events sea ágil, estructurado y sin información dispersa.
           </p>
         </div>
 
         <div className="experience-steps-grid">
           {steps.map((step, idx) => (
             <div key={idx} className="experience-step-card">
-              <span className="experience-step-num">{step.num}</span>
+              <span className="experience-step-num" style={{ color: "var(--color-gold)" }}>{step.num}</span>
               <h3 className="experience-step-title">{step.title}</h3>
               <p className="experience-step-desc">{step.desc}</p>
             </div>
@@ -54,9 +54,23 @@ export const ExperienceSection = () => {
         </div>
 
         <div style={{ textAlign: "center", marginTop: "3rem", display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
+          <Link 
+            to="/cotizar" 
+            className="btn btn-primary btn-lg"
+            onClick={() => {
+              trackEvent("demo_cta_clicked", {
+                cta_name: "planear_evento_experience",
+                location: "experience_section"
+              });
+            }}
+          >
+            <span>Planear mi evento</span>
+            <ArrowRightIcon size={18} />
+          </Link>
+
           <a 
             href="#disponibilidad" 
-            className="btn btn-primary btn-lg"
+            className="btn btn-secondary btn-lg"
             onClick={() => {
               trackEvent("demo_cta_clicked", {
                 cta_name: "consultar_fecha_experience",
@@ -67,20 +81,6 @@ export const ExperienceSection = () => {
             <CalendarIcon size={18} />
             <span>Consultar disponibilidad</span>
           </a>
-
-          <Link 
-            to="/cotizar" 
-            className="btn btn-secondary btn-lg"
-            onClick={() => {
-              trackEvent("demo_cta_clicked", {
-                cta_name: "iniciar_cotizacion_experience",
-                location: "experience_section"
-              });
-            }}
-          >
-            <span>Cotizar mi evento</span>
-            <ArrowRightIcon size={18} />
-          </Link>
         </div>
       </div>
     </section>
